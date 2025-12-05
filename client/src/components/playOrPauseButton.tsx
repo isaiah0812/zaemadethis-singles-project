@@ -9,6 +9,8 @@ type ControlButton = 'pause' | 'play';
 export default function PlayOrPauseButton({ song }: PlayOrPauseButtonProps) {
   const [ controlButton, setControlButton ] = useState<ControlButton>('play');
 
+  song.onended = () => setControlButton('play');
+
   return (
     <button onClick={() => {
         if (song.paused === true) {
