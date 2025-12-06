@@ -8,8 +8,8 @@ function App() {
 
   return (
     <>
-      <TimeSeeker song={song} />
       <PlayOrPauseButton song={song} />
+      <TimeSeeker song={song} />
       <VolumeSlider song={song} />
     </>
   )

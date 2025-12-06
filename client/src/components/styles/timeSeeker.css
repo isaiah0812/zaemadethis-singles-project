@@ -1,0 +1,27 @@
+.time-seeker, .time-seeker::-webkit-slider-runnable-track, .time-seeker::-moz-range-progress, .time-seeker::-webkit-slider-thumb {
+  -webkit-appearance: none;
+}
+
+.time-seeker {
+  outline: none;
+  background: #a7a7a7;
+  height: 0.25rem;
+  cursor: pointer
+}
+
+.time-seeker::-webkit-slider-runnable-track, .time-seeker::-moz-range-progress {
+  background: white;
+  height: 100%;
+}
+
+.time-seeker::-webkit-slider-thumb, .time-seeker::-moz-range-thumb {
+  width: 0px;
+  height: 0px;
+  border: none;
+}
+
+#seeker-container {
+  display: flex;
+  column-gap: 0.25rem;
+  align-items: center
+}

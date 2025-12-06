@@ -1,4 +1,5 @@
 import { useState } from "react"
+import './styles/timeSeeker.css';
 
 interface TimeSeekerProps {
   song: HTMLMediaElement
@@ -20,13 +21,13 @@ export default function TimeSeeker({ song }: TimeSeekerProps) {
   song.ontimeupdate = () => setCurrentTime(song.currentTime);
   
   return (
-    <>
-      {getStringTime(currentTime)}/{getStringTime(duration)}
-      <input type="range" name="timeSeeker" min="0" max={duration.toString()} value={currentTime} onChange={(e) => {
+    <div id="seeker-container">
+      <input className="time-seeker" type="range" name="timeSeeker" min="0" max={duration.toString()} value={currentTime} onChange={(e) => {
         const newTime = parseFloat(e.target.value)
-        song.fastSeek(newTime);
+        song.currentTime = newTime;
         setCurrentTime(newTime)
       }} />
-    </>
+      <label htmlFor="timeSeeker">{getStringTime(currentTime)}/{getStringTime(duration)}</label>
+    </div>
   )
 }
