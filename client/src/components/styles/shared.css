@@ -1,0 +1,10 @@
+button {
+  background: transparent;
+  padding: 0;
+  border: none;
+
+  &:hover {
+    border: none;
+    padding: 0;
+  }
+}

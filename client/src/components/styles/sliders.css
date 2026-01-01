@@ -1,0 +1,21 @@
+.slider, .slider::-webkit-slider-runnable-track, .slider::-moz-range-progress, .slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+}
+
+.slider {
+  outline: none;
+  background: #a7a7a7;
+  height: 0.25rem;
+  cursor: pointer
+}
+
+.slider::-webkit-slider-runnable-track, .slider::-moz-range-progress {
+  background: white;
+  height: 100%;
+}
+
+.slider::-webkit-slider-thumb, .slider::-moz-range-thumb {
+  width: 0px;
+  height: 0px;
+  border: none;
+}

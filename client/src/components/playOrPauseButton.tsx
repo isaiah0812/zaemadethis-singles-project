@@ -1,25 +1,39 @@
 import { useState } from "react";
+import { Icon } from '@mdi/react';
+import { mdiPause, mdiPlay } from "@mdi/js";
+import './styles/playOrPauseButton.css';
 
 interface PlayOrPauseButtonProps {
   song: HTMLAudioElement
 }
 
-type ControlButton = 'pause' | 'play';
+type ControlButton = typeof mdiPlay | typeof mdiPause;
 
 export default function PlayOrPauseButton({ song }: PlayOrPauseButtonProps) {
-  const [ controlButton, setControlButton ] = useState<ControlButton>('play');
+  const [ controlButton, setControlButton ] = useState<ControlButton>(mdiPlay);
 
-  song.onended = () => setControlButton('play');
+  song.onended = () => setControlButton(mdiPlay);
 
   return (
     <button onClick={() => {
         if (song.paused === true) {
           song.play();
-          setControlButton('pause');
+          setControlButton(mdiPause);
         } else {
           song.pause();
-          setControlButton('play');
+          setControlButton(mdiPlay);
         }
-      }}>{controlButton}</button>
+      }}><Icon path={controlButton} size="2rem" color="#FFFFFF"/></button>
   )
+  // return (
+  //   <button onClick={() => {
+  //       if (song.paused === true) {
+  //         song.play();
+  //         setControlButton('pause');
+  //       } else {
+  //         song.pause();
+  //         setControlButton('play');
+  //       }
+  //     }}>{controlButton}</button>
+  // )
 }
