@@ -1,6 +1,7 @@
 import { useState } from "react"
 import './styles/timeSeeker.css';
 import './styles/sliders.css';
+import PlayOrPauseButton from "./playOrPauseButton";
 
 interface TimeSeekerProps {
   song: HTMLMediaElement
@@ -23,7 +24,8 @@ export default function TimeSeeker({ song }: TimeSeekerProps) {
   
   return (
     <div id="seeker-container">
-      <input className="slider" type="range" name="timeSeeker" min="0" max={duration.toString()} value={currentTime} onChange={(e) => {
+      <PlayOrPauseButton song={song} />
+      <input id="time-seeker" className="slider" type="range" name="timeSeeker" min="0" max={duration.toString()} value={currentTime} onChange={(e) => {
         const newTime = parseFloat(e.target.value)
         song.currentTime = newTime;
         setCurrentTime(newTime)

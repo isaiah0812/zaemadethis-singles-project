@@ -31,9 +31,14 @@ export default function VolumeSlider({ song }: VolumeSliderProps) {
           song.volume = 0;
 
           selectVolumeIcon(0);
-        } else {
+        } else if (song.volume === 0 && volume !== 0) {
           song.volume = volume / 100;
           selectVolumeIcon(volume);
+        } else {
+          const v = 20;
+          song.volume = v / 100;
+          setVolume(v);
+          selectVolumeIcon(v);
         }
       }}>
         <Icon path={volumeIcon} size="2rem" color="#FFFFFF" />

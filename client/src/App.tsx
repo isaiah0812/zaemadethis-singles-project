@@ -1,5 +1,4 @@
 import './App.css'
-import PlayOrPauseButton from './components/playOrPauseButton';
 import TimeSeeker from './components/timeSeeker';
 import VolumeSlider from './components/volumeSlider';
 
@@ -8,9 +7,10 @@ function App() {
 
   return (
     <>
-      <PlayOrPauseButton song={song} />
-      <TimeSeeker song={song} />
-      <VolumeSlider song={song} />
+      <div id="player">
+        <TimeSeeker song={song} />
+        <VolumeSlider song={song} />
+      </div>
     </>
   )
 }

@@ -1,5 +1,3 @@
-#seeker-container {
-  display: flex;
-  column-gap: 0.25rem;
-  align-items: center
+#time-seeker {
+  width: 100%;
 }

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Icon } from '@mdi/react';
 import { mdiPause, mdiPlay } from "@mdi/js";
-import './styles/playOrPauseButton.css';
+import './styles/shared.css';
 
 interface PlayOrPauseButtonProps {
   song: HTMLAudioElement
@@ -24,16 +24,5 @@ export default function PlayOrPauseButton({ song }: PlayOrPauseButtonProps) {
           setControlButton(mdiPlay);
         }
       }}><Icon path={controlButton} size="2rem" color="#FFFFFF"/></button>
-  )
-  // return (
-  //   <button onClick={() => {
-  //       if (song.paused === true) {
-  //         song.play();
-  //         setControlButton('pause');
-  //       } else {
-  //         song.pause();
-  //         setControlButton('play');
-  //       }
-  //     }}>{controlButton}</button>
-  // )
+  );
 }

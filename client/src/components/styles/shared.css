@@ -8,3 +8,9 @@ button {
     padding: 0;
   }
 }
+
+#seeker-container, #volume-container {
+  display: flex;
+  column-gap: 0.25rem;
+  align-items: center
+}
