@@ -2,6 +2,7 @@ button {
   background: transparent;
   padding: 0;
   border: none;
+  cursor: pointer;
 
   &:hover {
     border: none;
@@ -12,5 +13,9 @@ button {
 #seeker-container, #volume-container {
   display: flex;
   column-gap: 0.25rem;
-  align-items: center
+  align-items: center;
+}
+
+#stat-counter {
+  justify-self: flex-end;
 }

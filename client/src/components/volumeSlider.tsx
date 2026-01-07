@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import './styles/sliders.css';
 import { mdiVolumeHigh, mdiVolumeLow, mdiVolumeMedium, mdiVolumeMute } from "@mdi/js";
 import Icon from "@mdi/react";
@@ -11,6 +11,10 @@ interface VolumeSliderProps {
 export default function VolumeSlider({ song }: VolumeSliderProps) {
   const [ volume, setVolume ] = useState(50);
   const [ volumeIcon, setVolumeIcon ] = useState(mdiVolumeMedium);
+
+  useEffect(() => {
+    song.volume = 0.5
+  }, [])
 
   const selectVolumeIcon = (incomingVolume: number) => {
     if (incomingVolume === 0) {
