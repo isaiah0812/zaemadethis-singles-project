@@ -4,7 +4,7 @@ import { createReadStream } from 'node:fs';
 
 const app = express();
 
-app.get('/', (req: Request, res: Response) => {
+app.get('/audio', (req: Request, res: Response) => {
   createReadStream(path.resolve('./assets/Dont_Go_Way_Nobody.mp3')).pipe(res);
 });
 
