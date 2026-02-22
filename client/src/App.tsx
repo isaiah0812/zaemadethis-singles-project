@@ -9,11 +9,15 @@ function App() {
 
   useEffect(() => {
     fetch('http://localhost:8080/audio/stream')
-      .then((response) => {
-        console.log(response);
+      .then((response) => response.blob())
+      .then(b => {
+        const audio = new Audio();
+        audio.src = URL.createObjectURL(b)
+        audio.load()
 
-        setSong(new Audio('Dont_Go_Way_Nobody.mp3'));
-      }).catch(err => console.error(err));
+        setSong(audio);
+      })
+      .catch(err => console.error(err));
   }, [])
   
   return (
