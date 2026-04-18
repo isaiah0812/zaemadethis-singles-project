@@ -3,6 +3,8 @@ services:
     image: fsouza/fake-gcs-server
     restart: always
     container_name: fake-gcs
+    environment:
+      FAKE_GCS_SCHEME: http
     ports:
       - 4443:4443
     volumes:
