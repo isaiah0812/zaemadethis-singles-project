@@ -9,6 +9,14 @@ services:
       - 4443:4443
     volumes:
       - ./assets:/data
+  mongo:
+    image: mongo:8.2.7
+    # platform: windows/amd64
+    restart: always
+    container_name: mongo
+    command: mongod --port 27018
+    ports:
+      - 27018:27018
   api:
     container_name: singles-api
     build:
@@ -18,6 +26,7 @@ services:
       - 8080:8080
     links:
       - gcs
+      - mongo
     develop:
       watch:
         - action: sync+restart
