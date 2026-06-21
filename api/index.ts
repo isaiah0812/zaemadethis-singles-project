@@ -1,6 +1,6 @@
 import express, { Request, Response } from 'express';
 import path from 'node:path';
-import { createReadStream, existsSync, mkdirSync, readFileSync } from 'node:fs';
+import { createReadStream, existsSync, mkdir, mkdirSync, readFileSync } from 'node:fs';
 import cors from 'cors';
 import id3 from 'node-id3';
 import { Bucket, Storage, StorageOptions } from '@google-cloud/storage';
@@ -8,6 +8,9 @@ import os from 'node:os';
 import multer from 'multer';
 import { create as createTarball } from 'tar';
 import { v4 as uuid } from 'uuid';
+
+const downloadsFolder = `${os.tmpdir()}/downloads`;
+const archivePrepFolder = `${os.tmpdir()}/archive_prep`;
 
 // Multer config
 const upload = multer({
@@ -41,17 +44,51 @@ if (id3File === true) {
   console.error(id3File.message);
 }
 
+const getCurrentFiles = () => bucket.getFiles({ prefix: 'current' })
+
 app.get('/audio/stream', async (req: Request, res: Response) => {
   const dest = path.resolve(`${os.tmpdir()}/current.mp3`);
-  await (await bucket.getFiles({ prefix: 'current' }))[0]
+  await (await getCurrentFiles())[0]
     .find(f => f.name.endsWith('.mp3'))
     ?.download({ destination: dest })
   createReadStream(dest).pipe(res);
 });
 app.get('/audio/download', async (req: Request, res: Response) => {
-  const dest = path.resolve(`${os.tmpdir()}/audio.mp3`);
-  await storage.bucket('sample_bucket').file(fileName).download({ destination: dest });
-  res.download(dest);
+  const downloadId = uuid();
+  console.info(`Download initialized by ${req.ip}! (Download ID: ${downloadId})`);
+  const currentDownloadFolder = `${downloadsFolder}/${downloadId}`;
+
+  if (!existsSync(downloadsFolder)) {
+    mkdirSync(downloadsFolder);
+    console.warn(`⚠️ Downloads folder was deleted. It has been re-created...`);
+  }
+
+  mkdirSync(currentDownloadFolder);
+  
+  const [ current ] = await getCurrentFiles();
+  const id = current[0]?.name.split('.')[0];
+  console.info(`📥 Song ${id} downloaded for download id ${downloadId}`)
+
+  const audioFile = current.find(f => f.name.endsWith('mp3'));
+  const tagsFile = current.find(f => f.name.endsWith('json'));
+
+  const audioDest = path.resolve(`${downloadsFolder}/${downloadId}/audio.mp3`);
+  const tagsDest = path.resolve(`${downloadsFolder}/${downloadId}/tags.json`);
+
+  await Promise.all([
+    audioFile?.download({ destination: audioDest }),
+    tagsFile?.download({ destination: tagsDest })
+  ]).then(() => console.info(`🤝 Song and tags saved to ${audioDest} and ${tagsDest}, respectively for download ${downloadId}.`));
+
+  const id3UpdateResult = id3.update(JSON.parse(readFileSync(tagsDest).toString()), audioDest)
+
+  if (id3UpdateResult === true) {
+    console.info(`✅ Tags for ${downloadId} saved to audio file. Sending to ${req.ip}!`)
+    res.download(audioDest);
+  } else {
+    console.error(`Error adding tags to file (Download ID: ${downloadId}): ${id3UpdateResult.message}`)
+    res.status(500).send('Error downloading file. Check server logs.');
+  }
 });
 app.post(
   '/audio/save',
@@ -109,7 +146,7 @@ app.post(
      * Takes the current song, makes it a tarball and puts it in GCS before deleting the other song from GCS.
      */
     const archivePast = async (): Promise<void> => {
-      const [ currentFiles ] = await bucket.getFiles({ prefix: 'current' });
+      const [ currentFiles ] = await getCurrentFiles();
 
       if (currentFiles.length === 0) {
         console.warn('No files to archive. Skipping ⏭️');
@@ -121,12 +158,13 @@ app.post(
       console.info(`Archiving files for ${oldId}:
 ${currentFiles.map(f => `- ${f.name}`).join('\n')}`)
 
-      const archivePrep = `${os.tmpdir()}/archive_prep`
-      if (!existsSync(archivePrep)) {
-        mkdirSync(archivePrep);
+      // const archivePrep = `${os.tmpdir()}/archive_prep`
+      if (!existsSync(archivePrepFolder)) {
+        mkdirSync(archivePrepFolder);
+        console.warn(`⚠️ Archive prep folder was deleted. It has been re-created...`);
       }
 
-      const tmpArchiveDirectory = `${archivePrep}/${oldId}`;
+      const tmpArchiveDirectory = `${archivePrepFolder}/${oldId}`;
       mkdirSync(tmpArchiveDirectory);
 
       console.info(`Saving old files to temp archive directory...`)
@@ -204,7 +242,13 @@ app.put('/blog/posts/:id', (req: Request, res: Response) => res.send('Updating t
 app.patch('/blog/posts/:id/archive', (req: Request, res: Response) => res.send('Archive this blog post!'));
 
 app.listen(8080, async () => {
+  console.info('Server configuration starting...');
+  await Promise.all([
+    mkdir(downloadsFolder, () => console.info(`💾 Downloads folder created at ${downloadsFolder}`)),
+    mkdir(archivePrepFolder, () => console.info(`🗄️ Archive prep folder created at ${archivePrepFolder}`))
+  ]);
   console.info('Getting storage bucket...');
   bucket = storage.bucket('sample_bucket');
+  console.info(`🪣 Bucket retrieved (name: ${bucket.name})`)
   console.info('Server ready to go! 👌');
 })
