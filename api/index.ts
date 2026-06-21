@@ -33,17 +33,6 @@ const gcs_connection_options: StorageOptions = {
 const storage = new Storage(gcs_connection_options);
 let bucket: Bucket;
 
-const fileName = 'Dont_Go_Way_Nobody_with_tags.mp3'
-const downloadedFile = path.resolve(`./assets/${fileName}`);
-const tagsFile = path.resolve('./assets/tags.json');
-const id3File = id3.update(JSON.parse(readFileSync(tagsFile).toString()), downloadedFile)
-
-if (id3File === true) {
-  console.info('Tags written to file!');
-} else {
-  console.error(id3File.message);
-}
-
 const getCurrentFiles = () => bucket.getFiles({ prefix: 'current' })
 
 app.get('/audio/stream', async (req: Request, res: Response) => {
