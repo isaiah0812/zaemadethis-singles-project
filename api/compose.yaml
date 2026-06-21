@@ -11,7 +11,6 @@ services:
       - ./assets:/data
   mongo:
     image: mongo:8.2.7
-    # platform: windows/amd64
     restart: always
     container_name: mongo
     command: mongod --port 27018
