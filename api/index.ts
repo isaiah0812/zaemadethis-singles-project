@@ -41,7 +41,13 @@ if (id3File === true) {
   console.error(id3File.message);
 }
 
-app.get('/audio/stream', (req: Request, res: Response) => createReadStream(path.resolve('./assets/Dont_Go_Way_Nobody.mp3')).pipe(res));
+app.get('/audio/stream', async (req: Request, res: Response) => {
+  const dest = path.resolve(`${os.tmpdir()}/current.mp3`);
+  await (await bucket.getFiles({ prefix: 'current' }))[0]
+    .find(f => f.name.endsWith('.mp3'))
+    ?.download({ destination: dest })
+  createReadStream(dest).pipe(res);
+});
 app.get('/audio/download', async (req: Request, res: Response) => {
   const dest = path.resolve(`${os.tmpdir()}/audio.mp3`);
   await storage.bucket('sample_bucket').file(fileName).download({ destination: dest });
