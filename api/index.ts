@@ -6,8 +6,8 @@ import id3 from 'node-id3';
 import { Bucket, Storage, StorageOptions } from '@google-cloud/storage';
 import os from 'node:os';
 import multer from 'multer';
-import { Collection, MongoClient, ObjectId } from 'mongodb';
 import { create as createTarball } from 'tar';
+import { v4 as uuid } from 'uuid';
 
 // Multer config
 const upload = multer({
@@ -29,11 +29,6 @@ const gcs_connection_options: StorageOptions = {
 
 const storage = new Storage(gcs_connection_options);
 let bucket: Bucket;
-
-// Mongo Config
-const dbUrl = 'mongodb://host.docker.internal:27018/'
-const client = new MongoClient(dbUrl);
-let singles: Collection
 
 const fileName = 'Dont_Go_Way_Nobody_with_tags.mp3'
 const downloadedFile = path.resolve(`./assets/${fileName}`);
@@ -94,7 +89,7 @@ app.post(
      * @param cover the cover art file
      * @param tags the mp3 metadata
      */
-    const saveToCurrent = async (id: ObjectId, audio: RequestFile, cover: RequestFile, tags: RequestFile): Promise<void> => {
+    const saveToCurrent = async (id: string, audio: RequestFile, cover: RequestFile, tags: RequestFile): Promise<void> => {
       console.info(`New song to be published to \`current/${id}.<json/mp3/png>\` in GCP`);
 
       await Promise.all([
@@ -171,7 +166,7 @@ ${currentFiles.map(f => `- ${f.name}`).join('\n')}`)
       ]).then(() => console.info(`✅ Archival process for ${oldId} complete!`));
     };
 
-    const id = new ObjectId();
+    const id = uuid();
     console.info(`New save:
   id: ${id}
   audio size: ${audio.size}
@@ -179,13 +174,6 @@ ${currentFiles.map(f => `- ${f.name}`).join('\n')}`)
   tags size: ${tagForm.size}`);
     
     try {
-      console.info(`Inserting ${id} tags to mongo...`);
-      await singles.insertOne({
-        _id: id,
-        tags: JSON.parse(tagForm.buffer.toString())
-      })
-      console.info(`Tags for ${id} inserted to mongo`);
-      
       // TODO make this whole thing asynchronous
       await archivePast()
       await saveToCurrent(id, audio, cover, tagForm)
@@ -210,10 +198,6 @@ app.put('/blog/posts/:id', (req: Request, res: Response) => res.send('Updating t
 app.patch('/blog/posts/:id/archive', (req: Request, res: Response) => res.send('Archive this blog post!'));
 
 app.listen(8080, async () => {
-  console.info('Connecting to Mongo...');
-  await client.connect();
-  singles = client.db('singles-project').collection('singles');
-  console.info('Mongo connected 🍃');
   console.info('Getting storage bucket...');
   bucket = storage.bucket('sample_bucket');
   console.info('Server ready to go! 👌');
