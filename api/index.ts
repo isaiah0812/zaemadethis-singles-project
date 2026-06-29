@@ -39,8 +39,8 @@ app.get('/audio/stream', async (req: Request, res: Response) => {
   const dest = path.resolve(`${os.tmpdir()}/current.mp3`);
   await (await getCurrentFiles())[0]
     .find(f => f.name.endsWith('.mp3'))
-    ?.download({ destination: dest })
-  createReadStream(dest).pipe(res);
+    ?.download({ destination: dest }).then(() => createReadStream(dest).pipe(res));
+  // createReadStream(dest).pipe(res);
 });
 app.get('/audio/download', async (req: Request, res: Response) => {
   const downloadId = uuid();
@@ -229,6 +229,8 @@ app.post('/blog/posts', (req: Request, res: Response) => res.send('Posting a blo
 app.get('/blog/posts/:id', (req: Request, res: Response) => res.send('Getting one blog post!'));
 app.put('/blog/posts/:id', (req: Request, res: Response) => res.send('Updating this blog post!'));
 app.patch('/blog/posts/:id/archive', (req: Request, res: Response) => res.send('Archive this blog post!'));
+
+app.get('/health', (_: Request, res: Response) => res.status(200).send());
 
 app.listen(8080, async () => {
   console.info('Server configuration starting...');
