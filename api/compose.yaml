@@ -18,6 +18,8 @@ services:
       - 8080:8080
     links:
       - gcs
+    depends_on:
+      - gcs
     develop:
       watch:
         - action: sync+restart
