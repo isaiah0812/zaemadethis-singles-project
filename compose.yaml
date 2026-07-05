@@ -22,5 +22,6 @@ services:
     develop:
       watch:
         - action: sync+restart
-          path: ./
+          path: ./client
           target: ./client
+          initial_sync: true
