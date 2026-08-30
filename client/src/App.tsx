@@ -3,9 +3,11 @@ import './App.css'
 import DownloadButton from './components/downloadButton';
 import TimeSeeker from './components/timeSeeker';
 import VolumeSlider from './components/volumeSlider';
+import PaymentSelection from './components/payment';
 
 function App() {
   const [ song, setSong ] = useState<HTMLAudioElement | null>(null);
+  const [ payment, togglePayment ] = useState<boolean>(false);
 
   useEffect(() => {
     fetch('http://localhost:8080/audio/stream')
@@ -19,6 +21,9 @@ function App() {
       })
       .catch(err => console.error(err));
   }, [])
+
+  const openPayment = () => togglePayment(true);
+  const closePayment = () => togglePayment(false);
   
   return (
     <>
@@ -27,10 +32,11 @@ function App() {
           <TimeSeeker song={song} />
           <div id="second-row">
             <VolumeSlider song={song} />
-            <DownloadButton />
+            <DownloadButton onClick={openPayment} />
           </div>
         </div>
       : 'No Audio'}
+      {payment && <PaymentSelection close={closePayment} />}
     </>
   )
 }

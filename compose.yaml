@@ -21,7 +21,7 @@ services:
       - stripe
     develop:
       watch:
-        - action: sync+restart
+        - action: sync
           path: ./client
           target: ./client
           initial_sync: true
