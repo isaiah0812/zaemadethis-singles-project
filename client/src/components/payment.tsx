@@ -2,11 +2,11 @@ import { useState, type ChangeEvent, type FocusEvent, type MouseEvent } from "re
 
 type PaymentProps = {
   close: () => any;
+  onSuccess: () => any;
 }
 
-export default function PaymentSelection({ close }: PaymentProps) {
+export default function PaymentSelection({ close, onSuccess }: PaymentProps) {
   const [ price, setPrice ] = useState<string>('0.00');
-  const [ isPriceValid, setPriceValid ] = useState<boolean>(true);
   const handleClose = (event: any) => {
     event.preventDefault();
     if (event.target === event.currentTarget) {
@@ -29,15 +29,11 @@ export default function PaymentSelection({ close }: PaymentProps) {
     }
   }
 
-  const handleValidation = () => {
-    const parsedPrice = parseFloat(price);
-    if (parsedPrice === 0 || parsedPrice) {
-      setPriceValid(true);
-      alert('Next!');
-    } else {
-      setPriceValid(false);
-      alert('Price not valid!');
-    }
+  const handlePayment = () => {
+    // TODO send price to payment screen
+
+    close();
+    onSuccess();
   }
   return(
     <div style={{
@@ -73,8 +69,8 @@ export default function PaymentSelection({ close }: PaymentProps) {
           But, if you're feeling like this shouldn't be free, let the
           intrusive thoughts win this time, enter an amount below,
           then click "Next".</p>
-        <input type='number' placeholder="0.00" value={price} onChange={handlePriceChange} style={{ borderColor: isPriceValid ? undefined : 'red' }} />
-        <button style={{backgroundColor: 'blue'}} onClick={handleValidation}>Next</button>
+        <input type='number' placeholder="0.00" value={price} onChange={handlePriceChange} />
+        <button style={{backgroundColor: 'blue'}} onClick={handlePayment}>Next</button>
         <button style={{backgroundColor: 'red'}} onClick={close}>Cancel</button>
       </div>
     </div>

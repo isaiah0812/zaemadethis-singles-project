@@ -24,6 +24,7 @@ function App() {
 
   const openPayment = () => togglePayment(true);
   const closePayment = () => togglePayment(false);
+  const downloadSong = () => window.location.assign('http://localhost:8080/audio/download')
   
   return (
     <>
@@ -36,7 +37,7 @@ function App() {
           </div>
         </div>
       : 'No Audio'}
-      {payment && <PaymentSelection close={closePayment} />}
+      {payment && <PaymentSelection close={closePayment} onSuccess={downloadSong} />}
     </>
   )
 }
