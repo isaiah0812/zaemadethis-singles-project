@@ -2,7 +2,7 @@ include:
   - ./api/compose.yaml
 services:
   stripe:
-    image: stripe/stripe-mock
+    image: stripe/stripe-mock:v0.203.0
     restart: always
     container_name: fake-stripe
     ports:

@@ -1,6 +1,6 @@
 services:
   gcs:
-    image: fsouza/fake-gcs-server
+    image: fsouza/fake-gcs-server:1.56.1
     restart: always
     container_name: fake-gcs
     environment:

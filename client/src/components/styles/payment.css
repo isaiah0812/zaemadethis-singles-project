@@ -1,0 +1,15 @@
+.payment-modal {
+  width: 100%;
+  max-width: 750px;
+  height: 11rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: white;
+  color: black;
+  z-index: 2;
+  border-radius: 1rem;
+  padding: 2rem;
+  flex-direction: column;
+  gap: 0.25rem;
+}

@@ -1,4 +1,5 @@
-import { useState, type ChangeEvent, type FocusEvent, type MouseEvent } from "react";
+import { useState, type ChangeEvent } from "react";
+import './styles/payment.css';
 
 type PaymentProps = {
   close: () => any;
@@ -36,36 +37,10 @@ export default function PaymentSelection({ close, onSuccess }: PaymentProps) {
     onSuccess();
   }
   return(
-    <div style={{
-      width: '100vw',
-      backgroundColor: 'rgba(0, 0, 0, 0.7)',
-      height: '100vh',
-      position: 'absolute',
-      top: '50%',
-      left: '50%',
-      transform: 'translate(-50%, -50%)',
-      zIndex: 1,
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center'
-    }} onClick={handleClose}>
-      <div style={{
-        width: '100%',
-        maxWidth: '750px',
-        height: '11rem',
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: 'white',
-        color: 'black',
-        zIndex: 2,
-        borderRadius: '1rem',
-        padding: '2rem',
-        flexDirection: 'column',
-        gap: '0.25rem',
-      }}>
+    <div className="modal-overlay" onClick={handleClose}>
+      <div className="payment-modal">
         <h3>Pay What You Want!</h3>
-        <p>I really don't care if you pay anything at all, it's free.
+        <p>I really don't care if you pay anything at all. It's free.
           But, if you're feeling like this shouldn't be free, let the
           intrusive thoughts win this time, enter an amount below,
           then click "Next".</p>
