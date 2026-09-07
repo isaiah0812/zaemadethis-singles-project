@@ -5,6 +5,8 @@ import blog from './endpoints/blog';
 import audio from './endpoints/audio';
 import { downloadsFolder, archivePrepFolder, bucket, initBucket } from './config/gcs';
 import payments from './endpoints/payments';
+import './config/stripe';
+import './config/multer';
 
 // Express config
 const app = express();

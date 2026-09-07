@@ -1,13 +1,6 @@
 include:
   - ./api/compose.yaml
 services:
-  stripe:
-    image: stripe/stripe-mock:v0.203.0
-    restart: always
-    container_name: fake-stripe
-    ports:
-      - 12111:12111
-      - 12112:12112
   client:
     container_name: client
     build:
@@ -18,7 +11,6 @@ services:
     depends_on:
       - gcs
       - api
-      - stripe
     develop:
       watch:
         - action: sync
