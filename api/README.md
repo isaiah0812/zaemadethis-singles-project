@@ -7,6 +7,8 @@
 - [Node 22 or later](https://nodejs.org/en/download) OR
 - [Docker](https://www.docker.com/products/docker-desktop/)
 
+> 💡 TIP: Use node 26 or later to avoid constant changes to the `package-lock.json` file, as it is not a part of the `.gitignore`.
+
 ### Run with NPM
 
 ```bash
