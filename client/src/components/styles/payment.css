@@ -1,4 +1,4 @@
-.payment-modal {
+.payment-selection-modal, .payment-checkout-modal {
   width: 100%;
   max-width: 750px;
   height: 11rem;
