@@ -26,9 +26,9 @@ export default function PaymentSelection({ close, onSuccess }: PaymentProps) {
     
     if (parsedValue !== 0 && parsedValue) {
       if (parsedValue > parsedPrice) {
-        setPrice((parsedValue * 10).toString());
+        setPrice((parsedValue * 10).toFixed(2));
       } else {
-        setPrice((parsedValue / 10).toString())
+        setPrice((parsedValue / 10).toFixed(2))
       }
     } else if ((parsedValue === 0 || e.target.value.trim() === '') && parsedPrice !== 0) {
       setPrice('0.00');
