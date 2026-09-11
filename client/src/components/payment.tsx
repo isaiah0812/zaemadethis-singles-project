@@ -30,7 +30,7 @@ export default function PaymentModal({ close, onSuccess }: PaymentProps) {
     let parsedPrice = parseFloat(price);
     
     if (parsedValue !== 0 && parsedValue) {
-      if (parsedValue > parsedPrice) {
+      if (parsedValue >= parsedPrice && e.target.value.length > price.length) {
         setPrice((parsedValue * 10).toFixed(2));
       } else {
         setPrice((parsedValue / 10).toFixed(2))
