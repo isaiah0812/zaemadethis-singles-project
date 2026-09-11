@@ -3,7 +3,13 @@ import { stripe } from '../config/stripe';
 
 const payments = express();
 
-payments.post('/start-payment', async (req: Request, res: Response) => {
+interface StartPaymentRequest {
+  price: number;
+}
+
+payments.post('/start-payment', async (req: Request<any, any, StartPaymentRequest>, res: Response) => {
+  const { price } = req.body;
+
   const session = await stripe.checkout.sessions.create({
     ui_mode: 'elements',
     mode: 'payment',
@@ -15,7 +21,7 @@ payments.post('/start-payment', async (req: Request, res: Response) => {
                 product_data: {
                     name: 'Current Song'
                 },
-                unit_amount: 100
+                unit_amount: price
             },
             quantity: 1
         }

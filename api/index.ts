@@ -11,6 +11,7 @@ import './config/multer';
 // Express config
 const app = express();
 app.use(cors());
+app.use(express.json());
 
 app.use('/audio', audio);
 app.use ('/payments', payments);

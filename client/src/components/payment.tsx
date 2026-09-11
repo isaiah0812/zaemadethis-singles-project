@@ -41,7 +41,21 @@ export default function PaymentModal({ close, onSuccess }: PaymentProps) {
   };
 
   const handleSelection = () => {
-    fetch('http://localhost:8080/payments/start-payment', { method: 'POST' })
+    const headers = {
+      'Content-Type': 'application/json'
+    };
+    
+    const body = {
+      price: parseFloat(price) * 100
+    };
+
+    const options: RequestInit = {
+      method: 'POST',
+      body: JSON.stringify(body),
+      headers
+    };
+
+    fetch('http://localhost:8080/payments/start-payment', options)
       .then(res => res.text())
       .then(data => {
         setClientSecret(data);
