@@ -29,6 +29,7 @@ payments.post('/start-payment', async (req: Request, res: Response) => {
   }
 
   res.send(session.client_secret);
+  console.info('Checkout session started!')
 });
 
 export default payments;

@@ -3,7 +3,7 @@ import './App.css'
 import DownloadButton from './components/downloadButton';
 import TimeSeeker from './components/timeSeeker';
 import VolumeSlider from './components/volumeSlider';
-import PaymentSelection from './components/payment';
+import PaymentModal from './components/payment';
 
 function App() {
   const [ song, setSong ] = useState<HTMLAudioElement | null>(null);
@@ -37,7 +37,7 @@ function App() {
           </div>
         </div>
       : 'No Audio'}
-      {payment && <PaymentSelection close={closePayment} onSuccess={downloadSong} />}
+      {payment && <PaymentModal close={closePayment} onSuccess={downloadSong} />}
     </>
   )
 }
