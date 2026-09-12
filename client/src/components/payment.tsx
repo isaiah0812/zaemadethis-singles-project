@@ -1,7 +1,8 @@
-import { useState, type ChangeEvent } from "react";
+import { useState, type ChangeEvent, type FormEvent } from "react";
 import './styles/payment.css';
 import { loadStripe } from "@stripe/stripe-js";
-import { CheckoutElementsProvider } from "@stripe/react-stripe-js/checkout";
+import { CheckoutElementsProvider, useCheckoutElements } from "@stripe/react-stripe-js/checkout";
+import { ContactDetailsElement, PaymentElement } from "@stripe/react-stripe-js";
 
 type PaymentProps = {
   close: () => any;
@@ -100,16 +101,73 @@ export default function PaymentModal({ close, onSuccess }: PaymentProps) {
             }
           }}
         >
-          <div className="payment-checkout-modal">
-            Hey there! Your price is {price}
-            <button style={{backgroundColor: 'blue'}} onClick={handlePayment}>Next</button>
-            <button style={{backgroundColor: 'red'}} onClick={() => {
-              setState(null);
-              close();
-            }}>Cancel</button>
-          </div>
+          <Checkout price={price} success={handlePayment} cancel={() => {
+            setState(null);
+            close();
+          }} />
         </CheckoutElementsProvider>
       )}
     </div>
   )
+}
+
+type CheckoutProps = {
+  price: string,
+  success: () => any,
+  cancel: () => any
+}
+
+function Checkout({ price, success, cancel }: CheckoutProps) {
+  const [ message, setMessage ] = useState<string | null>(null);
+  const [ isSubmitting, setIsSubmitting ] = useState<boolean>(false);
+
+  const checkoutState = useCheckoutElements();
+
+  if (checkoutState.type === 'loading') {
+    return (
+      <div>Loading...</div>
+    )
+  }
+
+  if (checkoutState.type === 'error') {
+    return (
+      <div>Error: {checkoutState.error.message}</div>
+    )
+  }
+
+  const handlePayment = async (e: FormEvent) => {
+    e.preventDefault();
+    const { checkout } = checkoutState;
+    setIsSubmitting(true);
+
+    const confirmResult = await checkout.confirm();
+
+    if (confirmResult.type === 'error') {
+      setMessage(confirmResult.error.message);
+    }
+
+    setIsSubmitting(false)
+
+    if (confirmResult.type === 'success') {
+      success();
+    }
+  }
+
+  return (
+    <form className="payment-checkout-modal" onSubmit={handlePayment}>
+      Hey there! Your price is {checkoutState.checkout.total.total.amount}.
+      {/* <h4>Contact Details</h4>
+      <ContactDetailsElement />
+      <h4>Payment</h4>
+      <PaymentElement id="payment-element" /> */}
+      <button style={{backgroundColor: 'blue'}} disabled={!checkoutState.checkout.canConfirm || isSubmitting} type="submit">
+        {isSubmitting ? (
+          <div className="spinner"></div>
+        ) : (
+          `Pay ${checkoutState.checkout.total.total.amount} now`
+        )}
+      </button>
+      <button style={{backgroundColor: 'red'}} onClick={cancel}>Cancel</button>
+    </form>
+  );
 }
