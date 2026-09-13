@@ -1,8 +1,7 @@
-import { useState, type ChangeEvent, type FormEvent } from "react";
+import { useEffect, useState, type ChangeEvent, type FormEvent } from "react";
 import './styles/payment.css';
 import { loadStripe } from "@stripe/stripe-js";
-import { CheckoutElementsProvider, useCheckoutElements } from "@stripe/react-stripe-js/checkout";
-import { ContactDetailsElement, PaymentElement } from "@stripe/react-stripe-js";
+import { CheckoutElementsProvider, useCheckoutElements, ContactDetailsElement, PaymentElement } from "@stripe/react-stripe-js/checkout";
 
 type PaymentProps = {
   close: () => any;
@@ -47,7 +46,7 @@ export default function PaymentModal({ close, onSuccess }: PaymentProps) {
     };
     
     const body = {
-      price: parseFloat(price) * 100
+      price: Math.floor(parseFloat(price) * 100)
     };
 
     const options: RequestInit = {
@@ -67,6 +66,7 @@ export default function PaymentModal({ close, onSuccess }: PaymentProps) {
   const handlePayment = () => {
     // TODO send price to payment screen
 
+    console.log('success! closing...');
     setState(null);
     close();
     onSuccess();
@@ -135,8 +135,9 @@ function Checkout({ price, success, cancel }: CheckoutProps) {
     )
   }
 
-  const handlePayment = async (e: FormEvent) => {
-    e.preventDefault();
+  const handlePayment = async () => {
+    console.log('Submitting!');
+    // e.preventDefault();
     const { checkout } = checkoutState;
     setIsSubmitting(true);
 
@@ -154,13 +155,12 @@ function Checkout({ price, success, cancel }: CheckoutProps) {
   }
 
   return (
-    <form className="payment-checkout-modal" onSubmit={handlePayment}>
-      Hey there! Your price is {checkoutState.checkout.total.total.amount}.
-      {/* <h4>Contact Details</h4>
+    <form className="payment-checkout-modal">
+      <h4>Contact Details</h4>
       <ContactDetailsElement />
       <h4>Payment</h4>
-      <PaymentElement id="payment-element" /> */}
-      <button style={{backgroundColor: 'blue'}} disabled={!checkoutState.checkout.canConfirm || isSubmitting} type="submit">
+      <PaymentElement id="payment-element" />
+      <button style={{backgroundColor: 'blue'}} disabled={!checkoutState.checkout.canConfirm || isSubmitting} type="submit" onClick={handlePayment}>
         {isSubmitting ? (
           <div className="spinner"></div>
         ) : (
