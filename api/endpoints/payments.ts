@@ -34,7 +34,7 @@ payments.post('/start-payment', async (req: Request<any, any, StartPaymentReques
     return;
   }
 
-  res.send(session.client_secret);
+  res.cookie('session_id', session.id, { httpOnly: true }).send(session.client_secret);
   console.info('Checkout session started!')
 });
 

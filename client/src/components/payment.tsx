@@ -52,7 +52,8 @@ export default function PaymentModal({ close, onSuccess }: PaymentProps) {
     const options: RequestInit = {
       method: 'POST',
       body: JSON.stringify(body),
-      headers
+      headers,
+      credentials: 'include'
     };
 
     fetch('http://localhost:8080/payments/start-payment', options)
@@ -148,10 +149,6 @@ function Checkout({ price, success, cancel }: CheckoutProps) {
     }
 
     setIsSubmitting(false)
-
-    if (confirmResult.type === 'success') {
-      success();
-    }
   }
 
   return (
