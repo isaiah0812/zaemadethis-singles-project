@@ -8,6 +8,7 @@ import PaymentModal from './components/payment';
 function App() {
   const [ song, setSong ] = useState<HTMLAudioElement | null>(null);
   const [ payment, togglePayment ] = useState<boolean>(false);
+  const [ download, toggleDownloadModal ] = useState<boolean>(false);
 
   useEffect(() => {
     fetch('http://localhost:8080/audio/stream')
@@ -18,6 +19,12 @@ function App() {
         audio.load()
 
         setSong(audio);
+
+        const params = new URLSearchParams(window.location.search);
+        if (params.has('mode') && params.get('mode') === 'download') {
+          console.log(document.cookie);
+          toggleDownloadModal(true);
+        }
       })
       .catch(err => console.error(err));
   }, [])
@@ -38,6 +45,11 @@ function App() {
         </div>
       : 'No Audio'}
       {payment && <PaymentModal close={closePayment} onSuccess={downloadSong} />}
+      {download && (
+        <div className="modal-overlay" onClick={() => toggleDownloadModal(false)}>
+          <div>Hello!</div>
+        </div>
+      )}
     </>
   )
 }
