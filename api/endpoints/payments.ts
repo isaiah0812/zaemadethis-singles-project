@@ -13,7 +13,7 @@ payments.post('/start-payment', async (req: Request<any, any, StartPaymentReques
   const session = await stripe.checkout.sessions.create({
     ui_mode: 'elements',
     mode: 'payment',
-    return_url: 'http://localhost:8080/audio/download',
+    return_url: 'http://localhost:3000?mode=download',
     line_items: [
         {
             price_data: {

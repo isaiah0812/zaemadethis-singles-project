@@ -10,6 +10,23 @@ function App() {
   const [ payment, togglePayment ] = useState<boolean>(false);
   const [ download, toggleDownloadModal ] = useState<boolean>(false);
 
+  const openPayment = () => togglePayment(true);
+  const closePayment = () => togglePayment(false);
+  const downloadSong = () => fetch('http://localhost:8080/audio/download')
+    .then(res => res.blob())
+    .then(blob => {
+      const file = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = file;
+      link.download = 'audio';
+      document.body.appendChild(link);
+      link.click();
+
+      link.remove();
+      window.URL.revokeObjectURL(file);
+    })
+    .catch(e => console.error(e));
+
   useEffect(() => {
     fetch('http://localhost:8080/audio/stream')
       .then((response) => response.blob())
@@ -22,16 +39,13 @@ function App() {
 
         const params = new URLSearchParams(window.location.search);
         if (params.has('mode') && params.get('mode') === 'download') {
-          console.log(document.cookie);
           toggleDownloadModal(true);
+
+          downloadSong();
         }
       })
       .catch(err => console.error(err));
-  }, [])
-
-  const openPayment = () => togglePayment(true);
-  const closePayment = () => togglePayment(false);
-  const downloadSong = () => window.location.assign('http://localhost:8080/audio/download')
+  }, []);
   
   return (
     <>
