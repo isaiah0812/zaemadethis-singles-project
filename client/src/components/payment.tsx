@@ -76,7 +76,7 @@ export default function PaymentModal({ close, onSuccess }: PaymentProps) {
   return(
     <div className="modal-overlay" onClick={handleClose}>
       {state === 'selection' && (
-        <div className="payment-selection-modal">
+        <div className="modal">
           <h3>Pay What You Want!</h3>
           <p>I really don't care if you pay anything at all. It's free.
             But, if you're feeling like this shouldn't be free, let the
@@ -152,7 +152,7 @@ function Checkout({ price, success, cancel }: CheckoutProps) {
   }
 
   return (
-    <form className="payment-checkout-modal">
+    <form className="modal">
       <h4>Contact Details</h4>
       <ContactDetailsElement />
       <h4>Payment</h4>

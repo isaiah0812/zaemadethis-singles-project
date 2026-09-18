@@ -27,6 +27,14 @@ function App() {
     })
     .catch(e => console.error(e));
 
+  const handleClosedDownloadModal = (event: any) => {
+    event.preventDefault();
+    if (event.target === event.currentTarget) {
+
+      toggleDownloadModal(false);
+    }
+  };
+
   useEffect(() => {
     fetch('http://localhost:8080/audio/stream')
       .then((response) => response.blob())
@@ -40,8 +48,6 @@ function App() {
         const params = new URLSearchParams(window.location.search);
         if (params.has('mode') && params.get('mode') === 'download') {
           toggleDownloadModal(true);
-
-          downloadSong();
         }
       })
       .catch(err => console.error(err));
@@ -60,8 +66,12 @@ function App() {
       : 'No Audio'}
       {payment && <PaymentModal close={closePayment} onSuccess={downloadSong} />}
       {download && (
-        <div className="modal-overlay" onClick={() => toggleDownloadModal(false)}>
-          <div>Hello!</div>
+        <div className="modal-overlay" onClick={handleClosedDownloadModal}>
+          <div className="modal">
+            <h3>Do you want to download this song?</h3>
+            <button onClick={downloadSong} style={{backgroundColor: 'blue'}}>Yes</button>
+            <button onClick={() => toggleDownloadModal(false)} style={{backgroundColor: 'red'}}>No</button>
+          </div>
         </div>
       )}
     </>
