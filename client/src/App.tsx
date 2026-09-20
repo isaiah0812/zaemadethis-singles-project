@@ -48,6 +48,8 @@ function App() {
         const params = new URLSearchParams(window.location.search);
         if (params.has('mode') && params.get('mode') === 'download') {
           toggleDownloadModal(true);
+          // TODO change this to the title of the streamer
+          history.replaceState({ page: 1 }, 'client', window.location.pathname);
         }
       })
       .catch(err => console.error(err));

@@ -1,5 +1,4 @@
-import { useEffect, useState, type ChangeEvent, type FormEvent } from "react";
-import './styles/payment.css';
+import { useState, type ChangeEvent } from "react";
 import { loadStripe } from "@stripe/stripe-js";
 import { CheckoutElementsProvider, useCheckoutElements, ContactDetailsElement, PaymentElement } from "@stripe/react-stripe-js/checkout";
 
