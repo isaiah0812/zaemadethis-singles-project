@@ -22,8 +22,6 @@ app.use ('/payments', payments);
 app.use('/blog', blog);
 app.get('/health', (_: Request, res: Response) => res.status(200).send());
 
-let current_id = null;
-
 app.listen(8080, async () => {
   console.info('Server configuration starting...');
   await Promise.all([
