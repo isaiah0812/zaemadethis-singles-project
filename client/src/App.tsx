@@ -24,6 +24,7 @@ function App() {
 
       link.remove();
       window.URL.revokeObjectURL(file);
+      toggleDownloadModal(false);
     })
     .catch(e => console.error(e));
 
@@ -46,10 +47,20 @@ function App() {
         setSong(audio);
 
         const params = new URLSearchParams(window.location.search);
-        if (params.has('mode') && params.get('mode') === 'download') {
-          toggleDownloadModal(true);
-          // TODO change this to the title of the streamer
-          history.replaceState({ page: 1 }, 'client', window.location.pathname);
+        if (params.has('session_id')) {
+          fetch(`http://localhost:8080/payments/verify-payment/${params.get('session_id')}`)
+            .then((res) => res.text())
+            .then((text) => {
+              if (text === 'OK!') {
+                toggleDownloadModal(true);
+              } else {
+                // TODO do better on the error handling and pop up the modal with a message
+                console.error('Error on verification:', text);
+              }
+            });
+            
+            // TODO change this to the title of the streamer
+            history.replaceState({ page: 1 }, 'client', window.location.pathname);
         }
       })
       .catch(err => console.error(err));

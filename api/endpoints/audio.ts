@@ -10,14 +10,13 @@ import os from 'node:os';
 
 const audio = express();
 
-const getCurrentFiles = () => bucket.getFiles({ prefix: 'current' })
+export const getCurrentFiles = () => bucket.getFiles({ prefix: 'current' })
 
 audio.get('/stream', async (req: Request, res: Response) => {
   const dest = path.resolve(`${os.tmpdir()}/current.mp3`);
   await (await getCurrentFiles())[0]
     .find(f => f.name.endsWith('.mp3'))
     ?.download({ destination: dest }).then(() => createReadStream(dest).pipe(res));
-  // createReadStream(dest).pipe(res);
 });
 audio.get('/download', async (req: Request, res: Response) => {
   const downloadId = uuid();

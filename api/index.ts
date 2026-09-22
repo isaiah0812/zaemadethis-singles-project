@@ -2,11 +2,12 @@ import express, { Request, Response } from 'express';
 import { mkdir } from 'node:fs';
 import cors from 'cors';
 import blog from './endpoints/blog';
-import audio from './endpoints/audio';
+import audio, { getCurrentFiles } from './endpoints/audio';
 import { downloadsFolder, archivePrepFolder, bucket, initBucket } from './config/gcs';
 import payments from './endpoints/payments';
 import './config/stripe';
 import './config/multer';
+import { getCurrentId } from './config/utils';
 
 // Express config
 const app = express();
@@ -21,6 +22,8 @@ app.use ('/payments', payments);
 app.use('/blog', blog);
 app.get('/health', (_: Request, res: Response) => res.status(200).send());
 
+let current_id = null;
+
 app.listen(8080, async () => {
   console.info('Server configuration starting...');
   await Promise.all([
@@ -30,5 +33,7 @@ app.listen(8080, async () => {
   console.info('Getting storage bucket...');
   initBucket();
   console.info(`🪣 Bucket retrieved (name: ${bucket.name})`);
+  
+  await getCurrentId();
   console.info('Server ready to go! 👌');
 })
