@@ -7,6 +7,7 @@ import id3 from 'node-id3';
 import { upload, RequestFile } from '../config/multer';
 import { create as createTarball } from 'tar';
 import os from 'node:os';
+import { setCurrentId } from '../config/utils';
 
 const audio = express();
 
@@ -153,6 +154,8 @@ ${currentFiles.map(f => `- ${f.name}`).join('\n')}`)
         const dest = `${tmpArchiveDirectory}/${getTarName(fileEnding)}.${fileEnding}`;
 
         await bucket.file(fileName).download({ destination: dest }).then(() => console.info(`📥 ${fileName} downloaded to temp file at ${dest}.`));
+
+        setCurrentId(id);
       }
 
       console.info(`Creating tarball archive in temp directory...`);

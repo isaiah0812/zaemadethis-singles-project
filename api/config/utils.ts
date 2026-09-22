@@ -15,3 +15,5 @@ export const getCurrentId = async () => {
 
   console.log(`✔ Current Song ID: ${current_id}`);
 };
+
+export const setCurrentId = (new_id: string) => current_id = new_id;
