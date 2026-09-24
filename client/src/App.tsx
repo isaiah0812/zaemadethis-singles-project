@@ -70,7 +70,7 @@ function App() {
             });
             
             // TODO change this to the title of the streamer
-            history.replaceState({ page: 1 }, document.getElementsByName('title')[0].innerHTML, window.location.pathname);
+            history.replaceState({ page: 1 }, 'client', window.location.pathname);
         }
       })
       .catch(err => console.error(err));
@@ -87,7 +87,7 @@ function App() {
           </div>
         </div>
       : 'No Audio'}
-      {payment && <PaymentModal close={closePayment} onSuccess={downloadSong} />}
+      {payment && <PaymentModal close={closePayment} />}
       {download && (
         <div className="modal-overlay" onClick={handleCloseDownloadModal}>
           <div className="modal">

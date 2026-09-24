@@ -4,14 +4,13 @@ import { CheckoutElementsProvider, useCheckoutElements, ContactDetailsElement, P
 
 type PaymentProps = {
   close: () => any;
-  onSuccess: () => any;
 }
 
 type PaymentState = 'selection' | 'loading' | 'checkout' | null;
 
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PK);
 
-export default function PaymentModal({ close, onSuccess }: PaymentProps) {
+export default function PaymentModal({ close }: PaymentProps) {
   const [ price, setPrice ] = useState<string>('0.00');
   const [ state, setState ] = useState<PaymentState>('selection');
   const [ clientSecret, setClientSecret ] = useState<string>('');
@@ -63,15 +62,6 @@ export default function PaymentModal({ close, onSuccess }: PaymentProps) {
       });
   };
 
-  const handlePayment = () => {
-    // TODO send price to payment screen
-
-    console.log('success! closing...');
-    setState(null);
-    close();
-    onSuccess();
-  };
-
   return(
     <div className="modal-overlay" onClick={handleClose}>
       {state === 'selection' && (
@@ -101,7 +91,7 @@ export default function PaymentModal({ close, onSuccess }: PaymentProps) {
             }
           }}
         >
-          <Checkout price={price} success={handlePayment} cancel={() => {
+          <Checkout free={parseFloat(price) === 0} cancel={() => {
             setState(null);
             close();
           }} />
@@ -112,14 +102,16 @@ export default function PaymentModal({ close, onSuccess }: PaymentProps) {
 }
 
 type CheckoutProps = {
-  price: string,
-  success: () => any,
-  cancel: () => any
+  cancel: () => any,
+  free: boolean
 }
 
-function Checkout({ price, success, cancel }: CheckoutProps) {
+type CheckoutStage = 'contact' | 'payment';
+
+function Checkout({ cancel, free }: CheckoutProps) {
   const [ message, setMessage ] = useState<string | null>(null);
   const [ isSubmitting, setIsSubmitting ] = useState<boolean>(false);
+  const [ stage, setStage ] = useState<CheckoutStage>('contact');
 
   const checkoutState = useCheckoutElements();
 
@@ -137,9 +129,11 @@ function Checkout({ price, success, cancel }: CheckoutProps) {
 
   const handlePayment = async () => {
     console.log('Submitting!');
-    // e.preventDefault();
+
     const { checkout } = checkoutState;
     setIsSubmitting(true);
+
+    
 
     const confirmResult = await checkout.confirm();
 
@@ -150,12 +144,31 @@ function Checkout({ price, success, cancel }: CheckoutProps) {
     setIsSubmitting(false)
   }
 
+  const validateContact = async () => {
+    console.log('Checking!');
+    const { validateElements } = checkoutState.checkout;
+
+    const validation = await validateElements();
+
+    if (validation.type === 'error') {
+      setStage('contact');
+    }
+
+    if (validation.type === 'success') {
+      setStage('payment');
+    }
+  }
+
   return (
     <form className="modal">
       <h4>Contact Details</h4>
-      <ContactDetailsElement />
-      <h4>Payment</h4>
-      <PaymentElement id="payment-element" />
+      <ContactDetailsElement onBlur={validateContact} />
+      {!free && stage === 'payment' && (
+        <>
+          <h4>Payment</h4>
+          <PaymentElement id="payment-element" />
+        </>
+      )}
       <button style={{backgroundColor: 'blue'}} disabled={!checkoutState.checkout.canConfirm || isSubmitting} type="submit" onClick={handlePayment}>
         {isSubmitting ? (
           <div className="spinner"></div>
