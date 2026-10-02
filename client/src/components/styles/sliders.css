@@ -4,13 +4,15 @@
 
 .slider {
   outline: none;
-  background: #a7a7a7;
-  height: 0.25rem;
+  background: transparent;
+  border: 0.15rem solid rgba(255, 255, 255, 0.87);
+  border-radius: 0.125rem;
+  height: 0.5rem;
   cursor: pointer
 }
 
 .slider::-webkit-slider-runnable-track, .slider::-moz-range-progress {
-  background: white;
+  background: #ffffff;
   height: 100%;
 }
 

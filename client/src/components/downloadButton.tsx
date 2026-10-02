@@ -8,7 +8,7 @@ type DownloadButtonProps = {
 export default function DownloadButton({ onClick }: DownloadButtonProps) {
   return (
     <button id="download-button" onClick={onClick}>
-      <Icon path={mdiTrayArrowDown} size="2rem" />
+      <Icon path={mdiTrayArrowDown} size="2rem" color="#ffffff" />
     </button>
   )
 }

@@ -6,7 +6,7 @@
 }
 
 #player {
-  border: 0.25rem solid #FFFFFF;
+  border: 0.35rem solid rgba(255, 255, 255, 0.87);
   border-radius: 0.25rem;
   padding: 2rem;
   max-width: 920px;
