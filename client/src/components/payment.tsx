@@ -67,10 +67,6 @@ export default function PaymentModal({ close }: PaymentProps) {
       {state === 'selection' && (
         <div className="modal">
           <h3>Pay What You Want!</h3>
-          <p>I really don't care if you pay anything at all. It's free.
-            But, if you're feeling like this shouldn't be free, let the
-            intrusive thoughts win this time, enter an amount below,
-            then click "Next".</p>
           <input type='number' placeholder="0.00" value={price} onChange={handlePriceChange} />
           <button style={{backgroundColor: 'blue'}} onClick={handleSelection}>Next</button>
           <button style={{backgroundColor: 'red'}} onClick={() => {

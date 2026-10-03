@@ -29,7 +29,7 @@
 
 .modal-overlay {
   width: 100vw;
-  background-color: rgba(0, 0, 0, 0.7);
+  background-color: rgba(0, 0, 0, 0);
   height: 100vh;
   position: absolute;
   top: 50%;
@@ -43,15 +43,16 @@
 
 .modal {
   width: 100%;
-  max-width: 750px;
-  min-height: 11rem;
+  max-width: 500px;
+  min-height: 20rem;
   display: flex;
   justify-content: center;
   align-items: center;
-  background-color: white;
-  color: black;
+  background-color: #9B111E;
+  color: white;
   z-index: 2;
   border-radius: 1rem;
+  border: 0.75rem solid #ffffff;
   padding: 2rem;
   flex-direction: column;
   gap: 0.25rem;
