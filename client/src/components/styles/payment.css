@@ -1,0 +1,22 @@
+#price-input {
+  background-color: transparent;
+  border: 0.15rem solid #ffffff;
+  border-radius: 0.25rem;
+  color: #ffffff;
+  font-size: 4rem;
+  padding: 0.5rem;
+
+  &:focus {
+    outline: none;
+  }
+
+  &::-webkit-inner-spin-button, &::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0
+  }
+}
+
+#price-input[type=number] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}

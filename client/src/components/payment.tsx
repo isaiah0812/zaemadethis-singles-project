@@ -1,6 +1,7 @@
 import { useState, type ChangeEvent } from "react";
 import { loadStripe } from "@stripe/stripe-js";
 import { CheckoutElementsProvider, useCheckoutElements, ContactDetailsElement, PaymentElement } from "@stripe/react-stripe-js/checkout";
+import './styles/payment.css';
 
 type PaymentProps = {
   close: () => any;
@@ -66,13 +67,15 @@ export default function PaymentModal({ close }: PaymentProps) {
     <div className="modal-overlay" onClick={handleClose}>
       {state === 'selection' && (
         <div className="modal">
-          <h3>Pay What You Want!</h3>
-          <input type='number' placeholder="0.00" value={price} onChange={handlePriceChange} />
-          <button style={{backgroundColor: 'blue'}} onClick={handleSelection}>Next</button>
-          <button style={{backgroundColor: 'red'}} onClick={() => {
-            setState(null);
-            close();
-          }}>Cancel</button>
+          <h1>PAY WHAT YOU WANT</h1>
+          <input id="price-input" type='number' placeholder="0.00" value={price} onChange={handlePriceChange} />
+          <div className="button-group">
+            <button className="button" onClick={() => {
+              setState(null);
+              close();
+            }}>Cancel</button>
+            <button className="button confirm" onClick={handleSelection}>Next</button>
+          </div>
         </div>
       )}
       {state === 'checkout' && (
@@ -165,14 +168,16 @@ function Checkout({ cancel, free }: CheckoutProps) {
           <PaymentElement id="payment-element" />
         </>
       )}
-      <button style={{backgroundColor: 'blue'}} disabled={!checkoutState.checkout.canConfirm || isSubmitting} type="submit" onClick={handlePayment}>
-        {isSubmitting ? (
-          <div className="spinner"></div>
-        ) : (
-          `Pay ${checkoutState.checkout.total.total.amount} now`
-        )}
-      </button>
-      <button style={{backgroundColor: 'red'}} onClick={cancel}>Cancel</button>
+      <div className="button-group">
+        <button className="button" onClick={cancel}>Cancel</button>
+        <button className="button confirm" disabled={!checkoutState.checkout.canConfirm || isSubmitting} type="submit" onClick={handlePayment}>
+          {isSubmitting ? (
+            <div className="spinner"></div>
+          ) : (
+            `Pay ${checkoutState.checkout.total.total.amount} now`
+          )}
+        </button>
+      </div>
     </form>
   );
 }

@@ -1,8 +1,11 @@
 button {
+  cursor: pointer;
+}
+
+.player-controls {
   background: transparent;
   padding: 0;
   border: none;
-  cursor: pointer;
 
   &:hover {
     border: none;

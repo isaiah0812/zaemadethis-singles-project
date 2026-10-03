@@ -47,7 +47,6 @@
   min-height: 20rem;
   display: flex;
   justify-content: center;
-  align-items: center;
   background-color: #9B111E;
   color: white;
   z-index: 2;
@@ -56,4 +55,39 @@
   padding: 2rem;
   flex-direction: column;
   gap: 0.25rem;
+
+  h1 {
+    font-size: 4rem;
+    text-align: left;
+    margin: 0;
+  }
+}
+
+.button {
+  border: 0.25rem solid #ffffff;
+  border-radius: 0.15rem;
+  padding: 0.5rem;
+  margin: 0.5rem;
+  background-color: transparent;
+  color: #ffffff;
+  max-width: 14rem;
+  width: 100%;
+  /* height: 3rem; */
+  box-shadow: -0.25rem 0.25rem 1px #4e4e4e;
+  font-size: 2rem;
+
+  &:active {
+    transform: translate(-0.25rem, 0.25rem);
+    box-shadow: none;
+  }
+}
+
+.button.confirm {
+  background-color: #0f90cc;
+}
+
+.button-group {
+  display: flex;
+  flex-wrap: nowrap;
+  justify-content: center;
 }

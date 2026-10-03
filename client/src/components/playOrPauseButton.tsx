@@ -15,7 +15,7 @@ export default function PlayOrPauseButton({ song }: PlayOrPauseButtonProps) {
   song.onended = () => setControlButton(mdiPlay);
 
   return (
-    <button onClick={() => {
+    <button className="player-controls" onClick={() => {
         if (song.paused === true) {
           song.play();
           setControlButton(mdiPause);

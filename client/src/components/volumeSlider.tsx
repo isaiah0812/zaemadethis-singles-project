@@ -30,7 +30,7 @@ export default function VolumeSlider({ song }: VolumeSliderProps) {
   
   return (
     <div id="volume-container">
-      <button onClick={() => {
+      <button className="player-controls" onClick={() => {
         if (song.volume !== 0) {
           song.volume = 0;
 
