@@ -85,7 +85,30 @@ export default function PaymentModal({ close }: PaymentProps) {
             clientSecret,
             elementsOptions: {
               appearance: {
-                theme: 'stripe'
+                theme: 'stripe',
+                variables: {
+                  // colorBackground: '#9B111E',
+                  // colorText: '#ffffff'
+                },
+                rules: {
+                  '.Input': {
+                    border: '0.25rem solid #ffffff',
+                    borderRadius: '0.15rem',
+                    backgroundColor: 'transparent'
+                  },
+                  '.Tab': {
+                    backgroundColor: 'transparent',
+                    borderRadius: '0.15rem',
+                    border: '0.25rem solid #ffffff',
+                    color: '#ffffff'
+                  },
+                  // '.Tab:hover': {
+                  //   color: '#ffffff'
+                  // },
+                  '.TabIcon': {
+                    backgroundColor: '#ffffff'
+                  }
+                }
               }
             }
           }}
@@ -165,7 +188,7 @@ function Checkout({ cancel, free }: CheckoutProps) {
       {!free && stage === 'payment' && (
         <>
           <h4>Payment</h4>
-          <PaymentElement id="payment-element" />
+          <PaymentElement id="payment-element" options={{ layout: 'tabs' }} />
         </>
       )}
       <div className="button-group">
