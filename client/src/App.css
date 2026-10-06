@@ -80,14 +80,32 @@
     transform: translate(-0.25rem, 0.25rem);
     box-shadow: none;
   }
+
+  &.confirm {
+    background-color: #0f90cc;
+  }
+
+  &:disabled {
+    box-shadow: none;
+    background-color: #4e4e4e;
+    transform: none;
+  }
 }
 
-.button.confirm {
+/* .button.confirm {
   background-color: #0f90cc;
-}
+} */
 
 .button-group {
   display: flex;
   flex-wrap: nowrap;
   justify-content: center;
+}
+
+.Tab > option {
+  color: #000000
+}
+
+input[type=checkbox] {
+  accent-color: '#9B111E'
 }

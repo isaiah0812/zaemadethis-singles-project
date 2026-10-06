@@ -87,8 +87,7 @@ export default function PaymentModal({ close }: PaymentProps) {
               appearance: {
                 theme: 'stripe',
                 variables: {
-                  // colorBackground: '#9B111E',
-                  // colorText: '#ffffff'
+                  colorText: '#ffffff'
                 },
                 rules: {
                   '.Input': {
@@ -96,17 +95,49 @@ export default function PaymentModal({ close }: PaymentProps) {
                     borderRadius: '0.15rem',
                     backgroundColor: 'transparent'
                   },
+                  '.Input:focus': {
+                    borderColor: '#ffffff',
+                  },
+                  '.Input::placeholder': {
+                    color: 'rgba(255, 255, 255, 0.5)'
+                  },
                   '.Tab': {
                     backgroundColor: 'transparent',
                     borderRadius: '0.15rem',
                     border: '0.25rem solid #ffffff',
-                    color: '#ffffff'
+                    color: '#ffffff',
+                    boxShadow: '-0.25rem 0.25rem 1px #4e4e4e'
                   },
-                  // '.Tab:hover': {
-                  //   color: '#ffffff'
-                  // },
+                  '.Tab:focus': {
+                    boxShadow: '#0f90cc',
+                  },
+                  '.Tab--selected:focus': {
+                    borderColor: '#0f90cc',
+                    boxShadow: '-0.25rem 0.25rem 1px #4e4e4e'
+                  },
+                  '.Tab--selected': {
+                    borderColor: '#0f90cc',
+                    boxShadow: '-0.25rem 0.25rem 1px #4e4e4e',
+                    transform: 'none',
+                  },
+                  '.Tab:active': {
+                    borderColor: '#0f90cc',
+                    boxShadow: 'none',
+                    tranform: 'translate(-0.25rem, 0.25rem)',
+                    animation: 'none'
+                  },
                   '.TabIcon': {
-                    backgroundColor: '#ffffff'
+                    fill: '#ffffff'
+                  },
+                  '.TabIcon--selected': {
+                    fill: '#0f90cc'
+                  },
+                  '.TabLabel--selected': {
+                    color: '#0f90cc'
+                  },
+                  '.CheckboxInput--checked': {
+                    backgroundColor: '#0f90cc',
+                    borderColor: '#0f90cc'
                   }
                 }
               }
@@ -128,12 +159,8 @@ type CheckoutProps = {
   free: boolean
 }
 
-type CheckoutStage = 'contact' | 'payment';
-
 function Checkout({ cancel, free }: CheckoutProps) {
-  const [ message, setMessage ] = useState<string | null>(null);
   const [ isSubmitting, setIsSubmitting ] = useState<boolean>(false);
-  const [ stage, setStage ] = useState<CheckoutStage>('contact');
 
   const checkoutState = useCheckoutElements();
 
@@ -160,35 +187,20 @@ function Checkout({ cancel, free }: CheckoutProps) {
     const confirmResult = await checkout.confirm();
 
     if (confirmResult.type === 'error') {
-      setMessage(confirmResult.error.message);
+      console.error(confirmResult.error.message);
     }
 
     setIsSubmitting(false)
   }
 
-  const validateContact = async () => {
-    console.log('Checking!');
-    const { validateElements } = checkoutState.checkout;
-
-    const validation = await validateElements();
-
-    if (validation.type === 'error') {
-      setStage('contact');
-    }
-
-    if (validation.type === 'success') {
-      setStage('payment');
-    }
-  }
-
   return (
     <form className="modal">
       <h4>Contact Details</h4>
-      <ContactDetailsElement onBlur={validateContact} />
-      {!free && stage === 'payment' && (
+      <ContactDetailsElement />
+      {!free && (
         <>
           <h4>Payment</h4>
-          <PaymentElement id="payment-element" options={{ layout: 'tabs' }} />
+          <PaymentElement id="payment-element" options={{ layout: { type: 'tabs', defaultCollapsed: true } }} />
         </>
       )}
       <div className="button-group">
