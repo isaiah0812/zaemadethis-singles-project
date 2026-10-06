@@ -92,8 +92,10 @@ function App() {
         <div className="modal-overlay" onClick={handleCloseDownloadModal}>
           <div className="modal">
             <h3>Do you want to download this song?</h3>
-            <button onClick={downloadSong} style={{backgroundColor: 'blue'}}>Yes</button>
-            <button onClick={() => toggleDownloadPrompt(false)} style={{backgroundColor: 'red'}}>No</button>
+            <div className="button-group">
+              <button onClick={() => toggleDownloadPrompt(false)} className="button">No</button>
+              <button onClick={downloadSong} className="button confirm">Yes</button>
+            </div>
           </div>
         </div>
       )}

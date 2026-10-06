@@ -72,7 +72,6 @@
   color: #ffffff;
   max-width: 14rem;
   width: 100%;
-  /* height: 3rem; */
   box-shadow: -0.25rem 0.25rem 1px #4e4e4e;
   font-size: 2rem;
 
@@ -92,18 +91,10 @@
   }
 }
 
-/* .button.confirm {
-  background-color: #0f90cc;
-} */
-
 .button-group {
   display: flex;
   flex-wrap: nowrap;
   justify-content: center;
-}
-
-.Tab > option {
-  color: #000000
 }
 
 input[type=checkbox] {

@@ -85,6 +85,7 @@ export default function PaymentModal({ close }: PaymentProps) {
             clientSecret,
             elementsOptions: {
               appearance: {
+                disableAnimations: true,
                 theme: 'stripe',
                 variables: {
                   colorText: '#ffffff'
@@ -138,7 +139,18 @@ export default function PaymentModal({ close }: PaymentProps) {
                   '.CheckboxInput--checked': {
                     backgroundColor: '#0f90cc',
                     borderColor: '#0f90cc'
+                  },
+                  '.Block': {
+                    backgroundColor: 'transparent',
+                    border: '0.25rem solid #ffffff',
+                    borderRadius: '0.15rem'
+                  },
+                  '.PickerItem': {
+                    backgroundColor: 'transparent',
+                    border: '0.25rem solid #ffffff',
+                    borderRadius: '0.15rem'
                   }
+                  // TODO change hover settings on picker item
                 }
               }
             }
