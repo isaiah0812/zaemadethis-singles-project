@@ -97,6 +97,6 @@
   justify-content: center;
 }
 
-input[type=checkbox] {
-  accent-color: '#9B111E'
+iframe > .Tab:active {
+  transform: translate(-0.25rem, 0.25rem);
 }

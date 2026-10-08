@@ -121,11 +121,16 @@ export default function PaymentModal({ close }: PaymentProps) {
                     boxShadow: '-0.25rem 0.25rem 1px #4e4e4e',
                     transform: 'none',
                   },
+                  /**
+                   * NOTE for anyone looking at this to implement themselves,
+                   * I couldn't get the buttons to opperate in the same way
+                   * for the stripe stuff. If they ever support `transform` in
+                   * the rules, change this to include the transformation from
+                   * the `.button` class
+                   */
                   '.Tab:active': {
                     borderColor: '#0f90cc',
-                    boxShadow: 'none',
-                    tranform: 'translate(-0.25rem, 0.25rem)',
-                    animation: 'none'
+                    boxShadow: 'none'
                   },
                   '.TabIcon': {
                     fill: '#ffffff'
@@ -148,9 +153,16 @@ export default function PaymentModal({ close }: PaymentProps) {
                   '.PickerItem': {
                     backgroundColor: 'transparent',
                     border: '0.25rem solid #ffffff',
-                    borderRadius: '0.15rem'
+                    borderRadius: '0.15rem',
+                    boxShadow: '-0.25rem 0.25rem 1px #4e4e4e'
+                  },
+                  '.PickerItem:hover': {
+                    backgroundColor: 'transparent'
+                  },
+                  '.PickerItem:focus': {
+                    borderColor: '#0f90cc',
+                    boxShadow: 'none'
                   }
-                  // TODO change hover settings on picker item
                 }
               }
             }
@@ -212,7 +224,12 @@ function Checkout({ cancel, free }: CheckoutProps) {
       {!free && (
         <>
           <h4>Payment</h4>
-          <PaymentElement id="payment-element" options={{ layout: { type: 'tabs', defaultCollapsed: true } }} />
+          <PaymentElement id="payment-element" options={{
+            layout: {
+              type: 'tabs',
+              defaultCollapsed: true
+            }
+          }} />
         </>
       )}
       <div className="button-group">
