@@ -52,7 +52,7 @@ export default function PaymentModal({ close }: PaymentProps) {
       method: 'POST',
       body: JSON.stringify(body),
       headers,
-      credentials: 'include'
+      // credentials: 'include'
     };
 
     fetch('http://localhost:8080/payments/start-payment', options)
