@@ -26,12 +26,6 @@
   z-index: 0;
 }
 
-@media (max-width: 600px) {
-  #player {
-    justify-content: space-around;
-  }
-}
-
 #second-row {
   display: flex;
   justify-content: space-between;
@@ -108,6 +102,13 @@
   justify-content: center;
 }
 
-iframe > .Tab:active {
-  transform: translate(-0.25rem, 0.25rem);
+@media (max-width: 600px) {
+  #player {
+    justify-content: space-around;
+  }
+
+  .button-group {
+    flex-wrap: wrap-reverse;
+  }
+
 }
