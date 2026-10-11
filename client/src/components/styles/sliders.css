@@ -1,5 +1,9 @@
-.slider, .slider::-webkit-slider-runnable-track, .slider::-moz-range-progress, .slider::-webkit-slider-thumb {
+.slider,
+.slider::-webkit-slider-runnable-track,
+.slider::-moz-range-progress,
+.slider::-webkit-slider-thumb {
   -webkit-appearance: none;
+  appearance: none;
 }
 
 .slider {
@@ -7,17 +11,36 @@
   background: transparent;
   border: 0.15rem solid rgba(255, 255, 255, 0.87);
   border-radius: 0.125rem;
-  height: 0.5rem;
-  cursor: pointer
+  height: 0.25rem;
+  cursor: grab;
+  appearance: none;
+
+  &::-webkit-slider-thumb, &::-moz-range-thumb {
+    --dimensions: 1rem;
+    -webkit-appearance: none;
+    appearance: none;
+    height: var(--dimensions);
+    width: var(--dimensions);
+    border: 0.25rem solid #ffffff;
+    background-color: #0f90cc;
+    border-radius: 0px;
+  }
+
+  &:active {
+    cursor: grabbing;
+  }
 }
 
 .slider::-webkit-slider-runnable-track, .slider::-moz-range-progress {
-  background: #ffffff;
+  /* background: #ffffff; */
   height: 100%;
 }
 
-.slider::-webkit-slider-thumb, .slider::-moz-range-thumb {
+/* .slider::-webkit-slider-thumb, .slider::-moz-range-thumb {
   width: 0px;
   height: 0px;
   border: none;
-}
+  background-color: transparent;
+  -webkit-appearance: none;
+  appearance: none;
+} */

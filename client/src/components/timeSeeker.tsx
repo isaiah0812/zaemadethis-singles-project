@@ -30,7 +30,7 @@ export default function TimeSeeker({ song }: TimeSeekerProps) {
         song.currentTime = newTime;
         setCurrentTime(newTime)
       }} />
-      <label htmlFor="timeSeeker">{getStringTime(currentTime)}/{getStringTime(duration)}</label>
+      <label htmlFor="time-seeker">{getStringTime(currentTime)}/{getStringTime(duration)}</label>
     </div>
   )
 }

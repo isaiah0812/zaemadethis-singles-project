@@ -1,3 +1,19 @@
 #time-seeker {
   width: 100%;
+
+  &::-webkit-slider-thumb {
+    --dimensions: 16px;
+    -webkit-appearance: none;
+    appearance: none;
+    height: var(--dimensions);
+    width: var(--dimensions);
+    border: 0.25rem solid #ffffff;
+    background-color: #0f90cc;
+  }
+
+  &::-webkit-slider-runnable-track {
+    -webkit-appearance: none;
+    appearance: none;
+    position: relative;
+  }
 }
