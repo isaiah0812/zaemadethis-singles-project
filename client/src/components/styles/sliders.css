@@ -16,7 +16,7 @@
   appearance: none;
 
   &::-webkit-slider-thumb, &::-moz-range-thumb {
-    --dimensions: 1rem;
+    --dimensions: 16px;
     -webkit-appearance: none;
     appearance: none;
     height: var(--dimensions);
