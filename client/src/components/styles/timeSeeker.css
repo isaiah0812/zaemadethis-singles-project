@@ -2,7 +2,7 @@
   width: 100%;
 
   &::-webkit-slider-thumb {
-    --dimensions: 16px;
+    --dimensions: 20px;
     -webkit-appearance: none;
     appearance: none;
     height: var(--dimensions);
