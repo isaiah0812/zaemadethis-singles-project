@@ -9,6 +9,7 @@
     width: var(--dimensions);
     border: 0.25rem solid #ffffff;
     background-color: #0f90cc;
+    border-radius: 0.2rem;
   }
 
   &::-webkit-slider-runnable-track {

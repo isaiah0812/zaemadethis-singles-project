@@ -48,6 +48,7 @@ export default function VolumeSlider({ song }: VolumeSliderProps) {
         <Icon path={volumeIcon} size="2rem" color="#FFFFFF" />
       </button>
       <input
+        id="volume-slider"
         className="slider"
         type="range"
         name="volume"

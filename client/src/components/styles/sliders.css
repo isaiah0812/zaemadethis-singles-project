@@ -23,7 +23,7 @@
     width: var(--dimensions);
     border: 0.25rem solid #ffffff;
     background-color: #0f90cc;
-    border-radius: 0px;
+    border-radius: 0.2rem;
   }
 
   &:active {
@@ -44,3 +44,24 @@
   -webkit-appearance: none;
   appearance: none;
 } */
+
+#volume-slider {
+  width: 100%;
+
+  &::-webkit-slider-thumb {
+    --dimensions: 20px;
+    -webkit-appearance: none;
+    appearance: none;
+    height: var(--dimensions);
+    width: var(--dimensions);
+    border: 0.25rem solid #ffffff;
+    background-color: #0f90cc;
+    border-radius: 0.2rem;
+  }
+
+  &::-webkit-slider-runnable-track {
+    -webkit-appearance: none;
+    appearance: none;
+    position: relative;
+  }
+}
