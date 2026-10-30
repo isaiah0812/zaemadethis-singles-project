@@ -84,11 +84,16 @@ export default function PaymentModal({ close }: PaymentProps) {
           options={{
             clientSecret,
             elementsOptions: {
+              fonts: [{
+                cssSrc: 'https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap'
+              }],
               appearance: {
                 disableAnimations: true,
                 theme: 'stripe',
                 variables: {
-                  colorText: '#ffffff'
+                  colorText: '#ffffff',
+                  fontFamily: '"Press Start 2P"',
+                  fontSizeBase: '14px'
                 },
                 rules: {
                   '.Input': {
