@@ -67,7 +67,7 @@ export default function PaymentModal({ close }: PaymentProps) {
     <div className="modal-overlay" onClick={handleClose}>
       {state === 'selection' && (
         <div className="modal">
-          <h1>PAY WHAT YOU WANT</h1>
+          <h1 className="title">PAY WHAT YOU WANT</h1>
           <input id="price-input" type='number' placeholder="0.00" value={price} onChange={handlePriceChange} />
           <div className="button-group">
             <button className="button" onClick={() => {
@@ -85,15 +85,15 @@ export default function PaymentModal({ close }: PaymentProps) {
             clientSecret,
             elementsOptions: {
               fonts: [{
-                cssSrc: 'https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap'
+                cssSrc: 'https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Silkscreen:wght@400;700&display=swap'
               }],
               appearance: {
                 disableAnimations: true,
                 theme: 'stripe',
                 variables: {
                   colorText: '#ffffff',
-                  fontFamily: '"Press Start 2P"',
-                  fontSizeBase: '14px'
+                  fontFamily: '"Silkscreen"',
+                  fontWeightNormal: '400'
                 },
                 rules: {
                   '.Input': {
@@ -142,6 +142,9 @@ export default function PaymentModal({ close }: PaymentProps) {
                   },
                   '.TabIcon--selected': {
                     fill: '#0f90cc'
+                  },
+                  '.TabLabel': {
+                    fontWeight: '400'
                   },
                   '.TabLabel--selected': {
                     color: '#0f90cc'
