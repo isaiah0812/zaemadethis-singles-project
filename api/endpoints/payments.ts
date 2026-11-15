@@ -15,7 +15,7 @@ payments.post('/start-payment', async (req: Request<any, any, StartPaymentReques
   const session = await stripe.checkout.sessions.create({
     ui_mode: 'elements',
     mode: 'payment',
-    return_url: 'http://localhost:3000?session_id={CHECKOUT_SESSION_ID}',
+    return_url: `http://localhost:3000?session_id={CHECKOUT_SESSION_ID}&song_id=${current_id}`,
     line_items: [
         {
             price_data: {
@@ -49,6 +49,11 @@ interface VerifyPaymentParams {
 
 payments.get('/verify-payment/:session_id', async (req: Request<VerifyPaymentParams>, res: Response) => {
   const session_id = req.params.session_id;
+
+  if (!req.query.song_id) {
+    res.status(400).send();
+    return;
+  }
   console.info(`Verifying payment of session ${session_id}`);
 
   const session = await stripe.checkout.sessions.retrieve(session_id);
@@ -57,10 +62,10 @@ payments.get('/verify-payment/:session_id', async (req: Request<VerifyPaymentPar
 
   if (session.payment_status !== 'paid') {
     message = 'Checkout not paid.';
-  } else if (session.metadata?.song_id !== current_id) {
-    message = 'Song not available.';
+  } else if (session.metadata?.song_id !== req.query.song_id) {
+    message = 'Invalid payment for selected song.';
   } else {
-    message = 'OK!'
+    message = 'OK!';
   }
 
   console.info(`session ${session_id} status: ${message}`);

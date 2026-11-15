@@ -21,7 +21,8 @@ audio.get('/stream', async (req: Request, res: Response) => {
 });
 
 // TODO: Implement node-taglib-sharp for other files outside of mp3
-audio.get('/download', async (req: Request, res: Response) => {
+// TODO: JWT
+audio.get('/:songId/download', async (req: Request, res: Response) => {
   const downloadId = uuid();
   console.info(`Download initialized by ${req.ip}! (Download ID: ${downloadId})`);
   const currentDownloadFolder = `${downloadsFolder}/${downloadId}`;

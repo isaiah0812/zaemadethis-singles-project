@@ -18,6 +18,10 @@ app.use('/audio', audio);
 app.use ('/payments', payments);
 app.use('/blog', blog);
 app.get('/health', (_: Request, res: Response) => res.status(200).send());
+app.get('/initialize', (req: Request, res: Response) => {
+  // TODO: JWT creation, validation and/or refresh
+  res.status(200).send();
+})
 
 app.listen(8080, async () => {
   console.info('Server configuration starting...');

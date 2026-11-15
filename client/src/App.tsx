@@ -10,10 +10,11 @@ function App() {
   const [ payment, togglePayment ] = useState<boolean>(false);
   const [ download, toggleDownloadPrompt ] = useState<boolean>(false);
   const [ instructions, toggleInstructions ] = useState<boolean>(false);
+  const [ downloadId, setDownloadId ] = useState<string>('');
 
   const openPayment = () => togglePayment(true);
   const closePayment = () => togglePayment(false);
-  const downloadSong = () => fetch('http://localhost:8080/audio/download')
+  const downloadSong = () => fetch(`http://localhost:8080/audio/${downloadId}/download`)
     .then(res => res.blob())
     .then(blob => {
       toggleDownloadPrompt(false);
@@ -57,22 +58,25 @@ function App() {
         setSong(audio);
 
         const params = new URLSearchParams(window.location.search);
-        if (params.has('session_id')) {
-          fetch(`http://localhost:8080/payments/verify-payment/${params.get('session_id')}`)
+        if (params.has('session_id') && params.has('song_id')) {
+          fetch(`http://localhost:8080/payments/verify-payment/${params.get('session_id')}?song_id=${params.get('song_id')}`)
             .then((res) => res.text())
             .then((text) => {
               if (text === 'OK!') {
                 toggleDownloadPrompt(true);
+                setDownloadId(params.get('song_id') ?? '');
               } else {
                 // TODO do better on the error handling and pop up the modal with a message
                 console.error('Error on verification:', text);
               }
             });
             
-            // TODO change this to the title of the streamer
-            history.replaceState({ page: 1 }, 'client', window.location.pathname);
+          // TODO change this to the title of the streamer
+          history.replaceState({ page: 1 }, 'client', window.location.pathname);
         }
       })
+      .catch(err => console.error(err));
+    fetch('http://localhost:8080/initialize')
       .catch(err => console.error(err));
   }, []);
   
