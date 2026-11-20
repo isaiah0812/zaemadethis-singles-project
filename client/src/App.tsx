@@ -14,22 +14,33 @@ function App() {
 
   const openPayment = () => togglePayment(true);
   const closePayment = () => togglePayment(false);
-  const downloadSong = () => fetch(`http://localhost:8080/audio/${downloadId}/download`)
-    .then(res => res.blob())
-    .then(blob => {
-      toggleDownloadPrompt(false);
-      const file = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = file;
-      link.download = 'audio';
-      document.body.appendChild(link);
-      link.click();
+  const downloadSong = () => {
+    
+    fetch('http://localhost:8080/initialize')
+      .then((initRes) => initRes.text())
+      .then((token) => {
+        const headers = new Headers();
+        headers.append('Authorization', `Bearer ${token}`);
+        fetch(`http://localhost:8080/audio/${downloadId}/download`, { headers })
+          .then(res => res.blob())
+          .then(blob => {
+            toggleDownloadPrompt(false);
+            const file = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = file;
+            link.download = 'audio';
+            document.body.appendChild(link);
+            link.click();
 
-      link.remove();
-      window.URL.revokeObjectURL(file);
-      toggleInstructions(true);
-    })
-    .catch(e => console.error(e));
+            link.remove();
+            window.URL.revokeObjectURL(file);
+            toggleInstructions(true);
+          })
+          .catch(e => console.error(e))
+      })
+      .catch(err => console.error(err));
+    
+  }
 
   const handleCloseDownloadModal = (event: any) => {
     event.preventDefault();
@@ -75,8 +86,6 @@ function App() {
           history.replaceState({ page: 1 }, 'client', window.location.pathname);
         }
       })
-      .catch(err => console.error(err));
-    fetch('http://localhost:8080/initialize')
       .catch(err => console.error(err));
   }, []);
   

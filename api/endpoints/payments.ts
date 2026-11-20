@@ -1,7 +1,7 @@
 import express, { Request, Response } from 'express';
 import { stripe } from '../config/stripe';
 import { getCurrentFiles } from './audio';
-import { current_id } from '../config/utils';
+import { current_id } from '../tools/utils';
 
 const payments = express();
 

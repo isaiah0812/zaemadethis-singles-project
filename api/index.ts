@@ -1,4 +1,5 @@
 import express, { Request, Response } from 'express';
+import 'dotenv/config';
 import { mkdir } from 'node:fs';
 import cors from 'cors';
 import blog from './endpoints/blog';
@@ -7,7 +8,8 @@ import { downloadsFolder, archivePrepFolder, bucket, initBucket } from './config
 import payments from './endpoints/payments';
 import './config/stripe';
 import './config/multer';
-import { getCurrentId } from './config/utils';
+import { getCurrentId } from './tools/utils';
+import jwt from 'jsonwebtoken';
 
 // Express config
 const app = express();
@@ -19,11 +21,12 @@ app.use ('/payments', payments);
 app.use('/blog', blog);
 app.get('/health', (_: Request, res: Response) => res.status(200).send());
 app.get('/initialize', (req: Request, res: Response) => {
-  // TODO: JWT creation, validation and/or refresh
-  res.status(200).send();
+  const token = jwt.sign({ foo: 'bar' }, process.env.JWT_SECRET!, { expiresIn: 60 });
+  res.status(200).send(token);
 })
 
 app.listen(8080, async () => {
+  // TODO: fail if the secrets aren't there
   console.info('Server configuration starting...');
   await Promise.all([
     mkdir(downloadsFolder, () => console.info(`💾 Downloads folder created at ${downloadsFolder}`)),

@@ -7,7 +7,8 @@ import id3 from 'node-id3';
 import { upload, RequestFile } from '../config/multer';
 import { create as createTarball } from 'tar';
 import os from 'node:os';
-import { setCurrentId } from '../config/utils';
+import { setCurrentId } from '../tools/utils';
+import { verifyJwt } from '../tools/middleware';
 
 const audio = express();
 
@@ -21,8 +22,7 @@ audio.get('/stream', async (req: Request, res: Response) => {
 });
 
 // TODO: Implement node-taglib-sharp for other files outside of mp3
-// TODO: JWT
-audio.get('/:songId/download', async (req: Request, res: Response) => {
+audio.get('/:songId/download', verifyJwt, async (req: Request, res: Response) => {
   const downloadId = uuid();
   console.info(`Download initialized by ${req.ip}! (Download ID: ${downloadId})`);
   const currentDownloadFolder = `${downloadsFolder}/${downloadId}`;
