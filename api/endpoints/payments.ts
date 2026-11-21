@@ -47,6 +47,7 @@ interface VerifyPaymentParams {
   session_id: string
 }
 
+// TODO: JWT Creation on success (set to cookie)
 payments.get('/verify-payment/:session_id', async (req: Request<VerifyPaymentParams>, res: Response) => {
   const session_id = req.params.session_id;
 
