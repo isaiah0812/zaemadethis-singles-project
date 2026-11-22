@@ -21,14 +21,17 @@ audio.get('/stream', async (req: Request, res: Response) => {
     ?.download({ destination: dest }).then(() => createReadStream(dest).pipe(res));
 });
 
-// TODO: Implement node-taglib-sharp for other files outside of mp3
+/* TODO: Implement the @audio/encode family to programatically download files of particular format (will take longer, that's fine).
+ * This will require a query parameter. Valid formats should be 160-256kbps mp3, 320kbps mp3, FLAC, and ALAC.
+ */
+// TODO: download from archive if necessary
 audio.get('/:songId/download', verifyJwt, async (req: Request, res: Response) => {
   const songId = req.params.songId;
   if (res.locals.auth_info.song_id !== songId) {
     res.status(403).send('Song cannot be downloaded with given credentials.');
     return;
   }
-  
+
   const downloadId = uuid();
   console.info(`Download initialized by ${req.ip}! (Download ID: ${downloadId})`);
   const currentDownloadFolder = `${downloadsFolder}/${downloadId}`;
@@ -65,6 +68,8 @@ audio.get('/:songId/download', verifyJwt, async (req: Request, res: Response) =>
     res.status(500).send('Error downloading file. Check server logs.');
   }
 });
+
+// TODO: save a wav, and convert to 160-256 mp3 for streaming.
 audio.post(
   '/save',
   upload.fields([{ name: 'audio', maxCount: 1 }, { name: 'cover', maxCount: 1 }, { name: 'tags', maxCount: 1 }]),
