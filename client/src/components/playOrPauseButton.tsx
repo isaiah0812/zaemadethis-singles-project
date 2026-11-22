@@ -1,28 +1,30 @@
 import { useState } from "react";
-import { Icon } from '@mdi/react';
-import { mdiPause, mdiPlay } from "@mdi/js";
 import './styles/shared.css';
+import { Pause, Play } from "./icons";
 
 interface PlayOrPauseButtonProps {
   song: HTMLAudioElement
 }
 
-type ControlButton = typeof mdiPlay | typeof mdiPause;
+type ControlButton = 'play' | 'pause';
 
 export default function PlayOrPauseButton({ song }: PlayOrPauseButtonProps) {
-  const [ controlButton, setControlButton ] = useState<ControlButton>(mdiPlay);
+  const [ controlButton, setControlButton ] = useState<ControlButton>('play');
 
-  song.onended = () => setControlButton(mdiPlay);
+  song.onended = () => setControlButton('play');
 
   return (
     <button className="player-controls" onClick={() => {
         if (song.paused === true) {
           song.play();
-          setControlButton(mdiPause);
+          setControlButton('pause');
         } else {
           song.pause();
-          setControlButton(mdiPlay);
+          setControlButton('play');
         }
-      }}><Icon path={controlButton} size="2rem" color="#FFFFFF"/></button>
+      }}>
+        { controlButton === 'play' && <Play size="2rem" />}
+        { controlButton === 'pause' && <Pause size="2rem" />}
+      </button>
   );
 }

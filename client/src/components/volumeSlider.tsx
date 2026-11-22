@@ -1,16 +1,17 @@
 import { useEffect, useState } from "react"
 import './styles/sliders.css';
-import { mdiVolumeHigh, mdiVolumeLow, mdiVolumeMedium, mdiVolumeMute } from "@mdi/js";
-import Icon from "@mdi/react";
 import './styles/shared.css';
+import { VolumeHigh, VolumeLow, VolumeMax, VolumeMedium, VolumeMuted } from "./icons";
 
 interface VolumeSliderProps {
   song: HTMLMediaElement
 }
 
+type VolumeIcon = 'muted' | 'low' | 'medium' | 'high' | 'max';
+
 export default function VolumeSlider({ song }: VolumeSliderProps) {
   const [ volume, setVolume ] = useState(50);
-  const [ volumeIcon, setVolumeIcon ] = useState(mdiVolumeMedium);
+  const [ volumeIcon, setVolumeIcon ] = useState<VolumeIcon>('medium');
 
   useEffect(() => {
     song.volume = 0.5
@@ -18,13 +19,15 @@ export default function VolumeSlider({ song }: VolumeSliderProps) {
 
   const selectVolumeIcon = (incomingVolume: number) => {
     if (incomingVolume === 0) {
-      setVolumeIcon(mdiVolumeMute);
-    } else if (incomingVolume < (1/3) * 100) {
-      setVolumeIcon(mdiVolumeLow);
-    } else if (incomingVolume < (2/3) * 100) {
-      setVolumeIcon(mdiVolumeMedium);
+      setVolumeIcon('muted');
+    } else if (incomingVolume < (1/4) * 100) {
+      setVolumeIcon('low');
+    } else if (incomingVolume < (2/4) * 100) {
+      setVolumeIcon('medium');
+    } else if (incomingVolume < (3/4) * 100) {
+      setVolumeIcon('high');
     } else {
-      setVolumeIcon(mdiVolumeHigh);
+      setVolumeIcon('max');
     }
   }
   
@@ -45,7 +48,11 @@ export default function VolumeSlider({ song }: VolumeSliderProps) {
           selectVolumeIcon(v);
         }
       }}>
-        <Icon path={volumeIcon} size="2rem" color="#FFFFFF" />
+        { volumeIcon === 'muted' && <VolumeMuted size="2rem" /> }
+        { volumeIcon === 'low' && <VolumeLow size="2rem" /> }
+        { volumeIcon === 'medium' && <VolumeMedium size="2rem" /> }
+        { volumeIcon === 'high' && <VolumeHigh size="2rem" /> }
+        { volumeIcon === 'max' && <VolumeMax size="2rem" /> }
       </button>
       <input
         id="volume-slider"
