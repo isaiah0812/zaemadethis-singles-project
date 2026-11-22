@@ -23,6 +23,12 @@ audio.get('/stream', async (req: Request, res: Response) => {
 
 // TODO: Implement node-taglib-sharp for other files outside of mp3
 audio.get('/:songId/download', verifyJwt, async (req: Request, res: Response) => {
+  const songId = req.params.songId;
+  if (res.locals.auth_info.song_id !== songId) {
+    res.status(403).send('Song cannot be downloaded with given credentials.');
+    return;
+  }
+  
   const downloadId = uuid();
   console.info(`Download initialized by ${req.ip}! (Download ID: ${downloadId})`);
   const currentDownloadFolder = `${downloadsFolder}/${downloadId}`;

@@ -12,34 +12,30 @@ function App() {
   const [ instructions, toggleInstructions ] = useState<boolean>(false);
   const [ downloadId, setDownloadId ] = useState<string>('');
 
+  const tokenStorageName = 'token';
+
   const openPayment = () => togglePayment(true);
   const closePayment = () => togglePayment(false);
   const downloadSong = () => {
+    const headers = new Headers();
+    headers.append('Authorization', `Bearer ${window.sessionStorage.getItem(tokenStorageName)}`);
     
-    fetch('http://localhost:8080/initialize')
-      .then((initRes) => initRes.text())
-      .then((token) => {
-        const headers = new Headers();
-        headers.append('Authorization', `Bearer ${token}`);
-        fetch(`http://localhost:8080/audio/${downloadId}/download`, { headers })
-          .then(res => res.blob())
-          .then(blob => {
-            toggleDownloadPrompt(false);
-            const file = window.URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = file;
-            link.download = 'audio';
-            document.body.appendChild(link);
-            link.click();
+    fetch(`http://localhost:8080/audio/${downloadId}/download`, { headers })
+      .then(res => res.blob())
+      .then(blob => {
+        toggleDownloadPrompt(false);
+        const file = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = file;
+        link.download = 'audio';
+        document.body.appendChild(link);
+        link.click();
 
-            link.remove();
-            window.URL.revokeObjectURL(file);
-            toggleInstructions(true);
-          })
-          .catch(e => console.error(e))
+        link.remove();
+        window.URL.revokeObjectURL(file);
+        toggleInstructions(true);
       })
-      .catch(err => console.error(err));
-    
+      .catch(e => console.error(e));
   }
 
   const handleCloseDownloadModal = (event: any) => {
@@ -71,15 +67,16 @@ function App() {
         const params = new URLSearchParams(window.location.search);
         if (params.has('session_id') && params.has('song_id')) {
           fetch(`http://localhost:8080/payments/verify-payment/${params.get('session_id')}?song_id=${params.get('song_id')}`)
-            .then((res) => res.text())
-            .then((text) => {
-              if (text === 'OK!') {
-                toggleDownloadPrompt(true);
-                setDownloadId(params.get('song_id') ?? '');
-              } else {
-                // TODO do better on the error handling and pop up the modal with a message
-                console.error('Error on verification:', text);
+            .then(async (res) => {
+              const message = await res.text();
+              if (!res.ok) {
+                console.error('Error on verification:', message);
+                return;
               }
+
+              toggleDownloadPrompt(true);
+              setDownloadId(params.get('song_id') ?? '');
+              window.sessionStorage.setItem(tokenStorageName, message);
             });
             
           // TODO change this to the title of the streamer

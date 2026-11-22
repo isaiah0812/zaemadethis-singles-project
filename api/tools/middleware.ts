@@ -14,7 +14,7 @@ export const verifyJwt = (req: Request, res: Response, next: NextFunction) => {
   }
 
   try {
-    jwt.verify(token.split(' ')[1]!, process.env.JWT_SECRET!);
+    res.locals.auth_info = jwt.verify(token.split(' ')[1]!, process.env.JWT_SECRET!);
     next();
   } catch (err) {
     res.status(401);

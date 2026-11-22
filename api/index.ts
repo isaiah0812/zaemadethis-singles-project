@@ -20,11 +20,6 @@ app.use('/audio', audio);
 app.use ('/payments', payments);
 app.use('/blog', blog);
 app.get('/health', (_: Request, res: Response) => res.status(200).send());
-// TODO: Move logic to /verify-payment
-app.get('/initialize', (req: Request, res: Response) => {
-  const token = jwt.sign({ foo: 'bar' }, process.env.JWT_SECRET!, { expiresIn: 60 });
-  res.status(200).send(token);
-});
 
 app.listen(8080, async () => {
   // TODO: fail if the secrets aren't there

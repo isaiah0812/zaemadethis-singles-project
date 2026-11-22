@@ -2,6 +2,8 @@ import express, { Request, Response } from 'express';
 import { stripe } from '../config/stripe';
 import { getCurrentFiles } from './audio';
 import { current_id } from '../tools/utils';
+import jwt from 'jsonwebtoken';
+import 'dotenv/config';
 
 const payments = express();
 
@@ -47,15 +49,14 @@ interface VerifyPaymentParams {
   session_id: string
 }
 
-// TODO: JWT Creation on success (set to cookie)
 payments.get('/verify-payment/:session_id', async (req: Request<VerifyPaymentParams>, res: Response) => {
   const session_id = req.params.session_id;
 
   if (!req.query.song_id) {
-    res.status(400).send();
+    res.status(400).send('song_id required.');
     return;
   }
-  console.info(`Verifying payment of session ${session_id}`);
+  console.info(`Verifying payment of session ${session_id}...`);
 
   const session = await stripe.checkout.sessions.retrieve(session_id);
 
@@ -63,14 +64,19 @@ payments.get('/verify-payment/:session_id', async (req: Request<VerifyPaymentPar
 
   if (session.payment_status !== 'paid') {
     message = 'Checkout not paid.';
+    res.status(400);
+    console.warn(`session ${session_id} status: ${message}`);
   } else if (session.metadata?.song_id !== req.query.song_id) {
     message = 'Invalid payment for selected song.';
+    res.status(400);
+    console.warn(`session ${session_id} status: ${message}`);
   } else {
-    message = 'OK!';
+    message = jwt.sign({ song_id: req.query.song_id }, process.env.JWT_SECRET!, { expiresIn: 3600 });
+    res.status(200);
+    console.info(`session ${session_id} verified!`);
   }
 
-  console.info(`session ${session_id} status: ${message}`);
-  res.status(200).send(message);
+  res.send(message);
 });
 
 export default payments;
