@@ -69,6 +69,95 @@ audio.get('/:songId/download', verifyJwt, async (req: Request, res: Response) =>
   }
 });
 
+/**
+ * Saves files to GCS. Run it last.
+ * 
+ * @param id The ID of the song
+ * @param audio the song's audio file
+ * @param cover the cover art file
+ * @param tags the mp3 metadata
+ */
+const saveToCurrent = async (id: string, audio: RequestFile, cover: RequestFile, tags: RequestFile): Promise<void> => {
+  console.info(`New song to be published to \`current/${id}.<json/mp3/png>\` in GCP`);
+
+  await Promise.all([
+    bucket.file(`current/${id}.json`).save(tags.buffer).then(() => console.info('\t📄 Tags file published!')),
+    bucket.file(`current/${id}.mp3`).save(audio.buffer).then(() => console.info('\t🔉 Audio file publihed!')),
+    bucket.file(`current/${id}.png`).save(cover.buffer).then(() => console.info('\t🖼️ Cover file publihed!')),
+  ]).then(() => {
+    setCurrentId(id);
+    console.info(`✅ Files for ${id} published into current directory.`)
+  });
+};
+
+/**
+ * Takes the current song, makes it a tarball and puts it in GCS before deleting the other song from GCS.
+ */
+const archivePast = async (): Promise<void> => {
+  const [ currentFiles ] = await getCurrentFiles();
+
+  if (currentFiles.length === 0) {
+    console.warn('No files to archive. Skipping ⏭️');
+    return;
+  }
+
+  const oldId = currentFiles[0]?.name.split('/')[1]?.split('.')[0]
+
+  console.info(`Archiving files for ${oldId}:
+${currentFiles.map(f => `- ${f.name}`).join('\n')}`)
+
+  // const archivePrep = `${os.tmpdir()}/archive_prep`
+  if (!existsSync(archivePrepFolder)) {
+    mkdirSync(archivePrepFolder);
+    console.warn(`⚠️ Archive prep folder was deleted. It has been re-created...`);
+  }
+
+  const tmpArchiveDirectory = `${archivePrepFolder}/${oldId}`;
+  mkdirSync(tmpArchiveDirectory);
+
+  console.info(`Saving old files to temp archive directory...`)
+  for (const old of currentFiles) {
+    const fileName = old.name;
+    const splitName = fileName.split('.');
+    const fileEnding = splitName[splitName.length - 1] ?? 'no ending';
+
+    const getTarName = (ending: string): 'tags' | 'audio' | 'cover' => {
+      switch (ending.toLowerCase()) {
+        case 'json': return 'tags';
+        case 'mp3': return 'audio';
+        case 'png': return 'cover';
+        default: {
+          console.error(`File ending ${ending} not valid. Cannot archive.`);
+          throw new Error(`File ending ${ending} not valid.`);
+        };
+      }
+    };
+
+    const dest = `${tmpArchiveDirectory}/${getTarName(fileEnding)}.${fileEnding}`;
+
+    await bucket.file(fileName).download({ destination: dest }).then(() => console.info(`📥 ${fileName} downloaded to temp file at ${dest}.`));
+  }
+
+  console.info(`Creating tarball archive in temp directory...`);
+  const tmpTarball = `${oldId}.tgz`
+  await createTarball({
+    gzip: true,
+    file: tmpTarball,
+    cwd: tmpArchiveDirectory
+  }, [ '.' ]).then(() => console.info(`📦 Tarball created at ${tmpTarball}.`));
+
+  // TODO: extract the deletion process and put it in a different function
+  console.info(`Publishing archive file and deleting previous current files...`)
+  const archiveName = `archive/${oldId}.tgz`;
+  await Promise.all([
+    bucket.file(archiveName).save(readFileSync(tmpTarball)).then(() => console.info(`📤 Tarball saved in GCS as ${archiveName}.`)),
+    ...currentFiles.map(async f => {
+      const fileName = f.name;
+      return bucket.file(fileName).delete().then(() => console.info(`🗑️ ${fileName} deleted from GCS.`));
+    })
+  ]).then(() => console.info(`✅ Archival process for ${oldId} complete!`));
+};
+
 // TODO: save a wav, and convert to 160-256 mp3 for streaming.
 audio.post(
   '/save',
@@ -104,94 +193,6 @@ audio.post(
     const cover = covers[0];
     const tagForm = tagForms[0];
 
-    /**
-     * Saves files to GCS. Run it last.
-     * 
-     * @param id The ID of the song
-     * @param audio the song's audio file
-     * @param cover the cover art file
-     * @param tags the mp3 metadata
-     */
-    const saveToCurrent = async (id: string, audio: RequestFile, cover: RequestFile, tags: RequestFile): Promise<void> => {
-      console.info(`New song to be published to \`current/${id}.<json/mp3/png>\` in GCP`);
-
-      await Promise.all([
-        bucket.file(`current/${id}.json`).save(tags.buffer).then(() => console.info('\t📄 Tags file published!')),
-        bucket.file(`current/${id}.mp3`).save(audio.buffer).then(() => console.info('\t🔉 Audio file publihed!')),
-        bucket.file(`current/${id}.png`).save(cover.buffer).then(() => console.info('\t🖼️ Cover file publihed!')),
-      ]).then(() => console.info(`✅ Files for ${id} published into current directory.`));
-    };
-
-    /**
-     * Takes the current song, makes it a tarball and puts it in GCS before deleting the other song from GCS.
-     */
-    const archivePast = async (): Promise<void> => {
-      const [ currentFiles ] = await getCurrentFiles();
-
-      if (currentFiles.length === 0) {
-        console.warn('No files to archive. Skipping ⏭️');
-        return;
-      }
-
-      const oldId = currentFiles[0]?.name.split('/')[1]?.split('.')[0]
-
-      console.info(`Archiving files for ${oldId}:
-${currentFiles.map(f => `- ${f.name}`).join('\n')}`)
-
-      // const archivePrep = `${os.tmpdir()}/archive_prep`
-      if (!existsSync(archivePrepFolder)) {
-        mkdirSync(archivePrepFolder);
-        console.warn(`⚠️ Archive prep folder was deleted. It has been re-created...`);
-      }
-
-      const tmpArchiveDirectory = `${archivePrepFolder}/${oldId}`;
-      mkdirSync(tmpArchiveDirectory);
-
-      console.info(`Saving old files to temp archive directory...`)
-      for (const old of currentFiles) {
-        const fileName = old.name;
-        const splitName = fileName.split('.');
-        const fileEnding = splitName[splitName.length - 1] ?? 'no ending';
-
-        const getTarName = (ending: string): 'tags' | 'audio' | 'cover' => {
-          switch (ending.toLowerCase()) {
-            case 'json': return 'tags';
-            case 'mp3': return 'audio';
-            case 'png': return 'cover';
-            default: {
-              console.error(`File ending ${ending} not valid. Cannot archive.`);
-              throw new Error(`File ending ${ending} not valid.`);
-            };
-          }
-        };
-
-        const dest = `${tmpArchiveDirectory}/${getTarName(fileEnding)}.${fileEnding}`;
-
-        await bucket.file(fileName).download({ destination: dest }).then(() => console.info(`📥 ${fileName} downloaded to temp file at ${dest}.`));
-
-        setCurrentId(id);
-      }
-
-      console.info(`Creating tarball archive in temp directory...`);
-      const tmpTarball = `${oldId}.tgz`
-      await createTarball({
-        gzip: true,
-        file: tmpTarball,
-        cwd: tmpArchiveDirectory
-      }, [ '.' ]).then(() => console.info(`📦 Tarball created at ${tmpTarball}.`));
-
-      // TODO extract the deletion process and put it in a different function
-      console.info(`Publishing archive file and deleting previous current files...`)
-      const archiveName = `archive/${oldId}.tgz`;
-      await Promise.all([
-        bucket.file(archiveName).save(readFileSync(tmpTarball)).then(() => console.info(`📤 Tarball saved in GCS as ${archiveName}.`)),
-        ...currentFiles.map(async f => {
-          const fileName = f.name;
-          return bucket.file(fileName).delete().then(() => console.info(`🗑️ ${fileName} deleted from GCS.`));
-        })
-      ]).then(() => console.info(`✅ Archival process for ${oldId} complete!`));
-    };
-
     const id = uuid();
     console.info(`New save:
   id: ${id}
@@ -200,7 +201,7 @@ ${currentFiles.map(f => `- ${f.name}`).join('\n')}`)
   tags size: ${tagForm.size}`);
     
     try {
-      // TODO make this whole thing asynchronous
+      // TODO: make this whole thing asynchronous
       await archivePast()
       await saveToCurrent(id, audio, cover, tagForm)
 
