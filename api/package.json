@@ -24,6 +24,8 @@
     "typescript": "^5.9.3"
   },
   "dependencies": {
+    "@audio/decode-wav": "^2.0.1",
+    "@audio/encode-mp3": "^2.0.1",
     "@google-cloud/storage": "^8.0.1",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",

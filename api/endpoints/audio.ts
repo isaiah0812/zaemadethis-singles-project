@@ -9,12 +9,15 @@ import { create as createTarball } from 'tar';
 import os from 'node:os';
 import { setCurrentId } from '../tools/utils';
 import { verifyJwt } from '../tools/middleware';
+import decode from '@audio/decode-wav';
+import mp3 from '@audio/encode-mp3';
 
 const audio = express();
 
 export const getCurrentFiles = () => bucket.getFiles({ prefix: 'current' })
 
 audio.get('/stream', async (req: Request, res: Response) => {
+  res.contentType('audio/mpeg');
   const dest = path.resolve(`${os.tmpdir()}/current.mp3`);
   await (await getCurrentFiles())[0]
     .find(f => f.name.endsWith('.mp3'))
@@ -78,15 +81,47 @@ audio.get('/:songId/download', verifyJwt, async (req: Request, res: Response) =>
  * @param tags the mp3 metadata
  */
 const saveToCurrent = async (id: string, audio: RequestFile, cover: RequestFile, tags: RequestFile): Promise<void> => {
-  console.info(`New song to be published to \`current/${id}.<json/mp3/png>\` in GCP`);
+  // Convert wav to streaming mp3
+  console.info('Converting wav file to an mp3 for streaming...')
+  const { channelData, sampleRate } = decode(audio.buffer)
+  const [ left, right ] = channelData;
+
+  if (!left || !right) {
+    throw new Error('Error decoding the wav file: one of the stereo channels is missing.');
+  }
+
+  const encoder = await mp3({ sampleRate, channels: 2, bitrate: 256 });
+  const song = encoder.encode(channelData);
+  const tail = encoder.flush();
+  
+  if (!encoder.head) {
+    encoder.free();
+    throw new Error('Error decoding the wav file: for some reason the head function is missing from the encoder.');
+  }
+  
+  const head = encoder.head() ?? new Uint8Array(0);
+
+  if (head.length === 0) {
+    console.warn('Head of file empty. Continuing...');
+  }
+
+  const fullSong = new Uint8Array(head.length + song.length + tail.length);
+  fullSong.set(head);
+  fullSong.set(song);
+  fullSong.set(tail);
+  console.info('🔀 Audio file converted to mp3 for streaming!');
+  
+  console.info(`New song to be published to \`current/${id}.<json/mp3/wav/png>\` in GCP`);
 
   await Promise.all([
     bucket.file(`current/${id}.json`).save(tags.buffer).then(() => console.info('\t📄 Tags file published!')),
-    bucket.file(`current/${id}.mp3`).save(audio.buffer).then(() => console.info('\t🔉 Audio file publihed!')),
+    bucket.file(`current/${id}.mp3`).save(fullSong).then(() => console.info('\t🔉 Streaming audio file (mp3, 256kbps) publihed!')),
+    bucket.file(`current/${id}.wav`).save(audio.buffer).then(() => console.info('`\t🌊 Raw audio file (wav) published!')),
     bucket.file(`current/${id}.png`).save(cover.buffer).then(() => console.info('\t🖼️ Cover file publihed!')),
   ]).then(() => {
     setCurrentId(id);
-    console.info(`✅ Files for ${id} published into current directory.`)
+    console.info(`✅ Files for ${id} published into current directory.`);
+    encoder.free();
   });
 };
 
@@ -121,11 +156,12 @@ ${currentFiles.map(f => `- ${f.name}`).join('\n')}`)
     const splitName = fileName.split('.');
     const fileEnding = splitName[splitName.length - 1] ?? 'no ending';
 
-    const getTarName = (ending: string): 'tags' | 'audio' | 'cover' => {
+    const getTarName = (ending: string): 'tags' | 'audio' | 'cover' | 'raw' => {
       switch (ending.toLowerCase()) {
         case 'json': return 'tags';
         case 'mp3': return 'audio';
         case 'png': return 'cover';
+        case 'wav': return 'raw';
         default: {
           console.error(`File ending ${ending} not valid. Cannot archive.`);
           throw new Error(`File ending ${ending} not valid.`);
@@ -153,12 +189,11 @@ ${currentFiles.map(f => `- ${f.name}`).join('\n')}`)
     bucket.file(archiveName).save(readFileSync(tmpTarball)).then(() => console.info(`📤 Tarball saved in GCS as ${archiveName}.`)),
     ...currentFiles.map(async f => {
       const fileName = f.name;
-      return bucket.file(fileName).delete().then(() => console.info(`🗑️ ${fileName} deleted from GCS.`));
+      return bucket.file(fileName).delete().then(() => console.info(`🗑️ ${fileName} deleted from current folder.`));
     })
   ]).then(() => console.info(`✅ Archival process for ${oldId} complete!`));
 };
 
-// TODO: save a wav, and convert to 160-256 mp3 for streaming.
 audio.post(
   '/save',
   upload.fields([{ name: 'audio', maxCount: 1 }, { name: 'cover', maxCount: 1 }, { name: 'tags', maxCount: 1 }]),
@@ -192,6 +227,11 @@ audio.post(
     const audio = audios[0];
     const cover = covers[0];
     const tagForm = tagForms[0];
+
+    if (audio.mimetype.toLowerCase() !== 'audio/wav') {
+      res.status(400).send('audio file must be wav file');
+      return;
+    }
 
     const id = uuid();
     console.info(`New save:
