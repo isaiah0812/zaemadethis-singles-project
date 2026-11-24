@@ -25,7 +25,10 @@
   },
   "dependencies": {
     "@audio/decode-wav": "^2.0.1",
+    "@audio/encode-alac": "^1.0.2",
+    "@audio/encode-flac": "^1.4.3",
     "@audio/encode-mp3": "^2.0.1",
+    "@audio/encode-mp4": "^1.2.1",
     "@google-cloud/storage": "^8.0.1",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",

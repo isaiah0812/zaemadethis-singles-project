@@ -24,14 +24,50 @@ audio.get('/stream', async (req: Request, res: Response) => {
     ?.download({ destination: dest }).then(() => createReadStream(dest).pipe(res));
 });
 
+enum AudioFormats {
+  MP3 = 'mp3',
+  FLAC = 'flac',
+  ALAC = 'alac'
+}
+
+enum BitRates {
+  LOW = 160,
+  NORMAL = 192,
+  GOOD = 256,
+  GREAT = 320
+}
+
 /* TODO: Implement the @audio/encode family to programatically download files of particular format (will take longer, that's fine).
  * This will require a query parameter. Valid formats should be 160-256kbps mp3, 320kbps mp3, FLAC, and ALAC.
  */
 // TODO: download from archive if necessary
-audio.get('/:songId/download', verifyJwt, async (req: Request, res: Response) => {
-  const songId = req.params.songId;
+audio.get('/:songId/download', verifyJwt, async (req: Request<{ songId: string }>, res: Response) => {
+  // Validation
+  const { songId } = req.params;
   if (res.locals.auth_info.song_id !== songId) {
     res.status(403).send('Song cannot be downloaded with given credentials.');
+    return;
+  }
+
+  const { format, bitRate } = req.query;
+
+  if (!format) {
+    res.status(400).send('format required');
+    return;
+  }
+
+  if (!Object.values(AudioFormats).includes(format.toString().toLowerCase() as AudioFormats)) {
+    res.status(400).send('invalid format');
+    return;
+  }
+
+  if (format === AudioFormats.MP3 && !bitRate) {
+    res.status(400).send('bitRate required when format is mp3');
+    return;
+  }
+
+  if (!Object.values(BitRates).includes(parseFloat(bitRate!.toString()))) {
+    res.status(400).send('invalid bitRate');
     return;
   }
 
