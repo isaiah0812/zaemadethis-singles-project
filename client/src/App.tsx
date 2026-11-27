@@ -20,7 +20,7 @@ function App() {
     const headers = new Headers();
     headers.append('Authorization', `Bearer ${window.sessionStorage.getItem(tokenStorageName)}`);
     
-    fetch(`http://localhost:8080/audio/${downloadId}/download`, { headers })
+    fetch(`http://localhost:8080/audio/${downloadId}/download?format=alac`, { headers })
       .then(res => res.blob())
       .then(blob => {
         toggleDownloadPrompt(false);

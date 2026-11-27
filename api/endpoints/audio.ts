@@ -1,7 +1,7 @@
 import express, { Request, Response } from 'express';
 import path from 'node:path';
 import { bucket, downloadsFolder, archivePrepFolder } from '../config/gcs';
-import { createReadStream, existsSync, mkdirSync, readFileSync } from 'node:fs';
+import { createReadStream, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { v4 as uuid } from 'uuid';
 import id3 from 'node-id3';
 import { upload, RequestFile } from '../config/multer';
@@ -10,7 +10,13 @@ import os from 'node:os';
 import { setCurrentId } from '../tools/utils';
 import { verifyJwt } from '../tools/middleware';
 import decode from '@audio/decode-wav';
-import mp3 from '@audio/encode-mp3';
+import mp3, { StreamEncoder } from '@audio/encode-mp3';
+import alac from '@audio/encode-alac';
+import flac from '@audio/encode-flac';
+
+const { writeMeta: writeMp3Meta } = require('@audio/encode-mp3/meta');
+const { writeMeta: writeFlacMeta } = require('@audio/encode-flac/meta');
+const { writeMeta: writeM4aMeta } = require('@audio/encode-mp4/meta');
 
 const audio = express();
 
@@ -42,6 +48,8 @@ enum BitRates {
  */
 // TODO: download from archive if necessary
 audio.get('/:songId/download', verifyJwt, async (req: Request<{ songId: string }>, res: Response) => {
+  const ERROR_ON_THE_DOWNLOAD_MESSAGE = 'Error on the download. Please contact the system administrator.';
+
   // Validation
   const { songId } = req.params;
   if (res.locals.auth_info.song_id !== songId) {
@@ -61,15 +69,18 @@ audio.get('/:songId/download', verifyJwt, async (req: Request<{ songId: string }
     return;
   }
 
-  if (format === AudioFormats.MP3 && !bitRate) {
-    res.status(400).send('bitRate required when format is mp3');
-    return;
+  if (format === AudioFormats.MP3) {
+    if (!bitRate) {
+      res.status(400).send('bitRate required when format is mp3');
+      return;
+    }
+  
+    if (!Object.values(BitRates).includes(parseFloat(bitRate!.toString()))) {
+      res.status(400).send('invalid bitRate');
+      return;
+    }
   }
 
-  if (!Object.values(BitRates).includes(parseFloat(bitRate!.toString()))) {
-    res.status(400).send('invalid bitRate');
-    return;
-  }
 
   const downloadId = uuid();
   console.info(`Download initialized by ${req.ip}! (Download ID: ${downloadId})`);
@@ -86,26 +97,109 @@ audio.get('/:songId/download', verifyJwt, async (req: Request<{ songId: string }
   const id = current[0]?.name.split('.')[0];
   console.info(`📥 Song ${id} downloaded for download id ${downloadId}`)
 
-  const audioFile = current.find(f => f.name.endsWith('mp3'));
+  const rawAudioCloudFile = current.find(f => f.name.endsWith('wav'));
   const tagsFile = current.find(f => f.name.endsWith('json'));
 
-  const audioDest = path.resolve(`${downloadsFolder}/${downloadId}/audio.mp3`);
+  const rawAudioDest = path.resolve(`${downloadsFolder}/${downloadId}/raw.wav`);
   const tagsDest = path.resolve(`${downloadsFolder}/${downloadId}/tags.json`);
 
   await Promise.all([
-    audioFile?.download({ destination: audioDest }),
+    rawAudioCloudFile?.download({ destination: rawAudioDest }),
     tagsFile?.download({ destination: tagsDest })
-  ]).then(() => console.info(`🤝 Song and tags saved to ${audioDest} and ${tagsDest}, respectively for download ${downloadId}.`));
+  ]).then(() => console.info(`🤝 Song and tags saved to ${rawAudioDest} and ${tagsDest}, respectively for download ${downloadId}.`));
 
-  const id3UpdateResult = id3.update(JSON.parse(readFileSync(tagsDest).toString()), audioDest)
+  const rawAudioLocalFile = readFileSync(rawAudioDest);
+  const { channelData, sampleRate } = decode(rawAudioLocalFile.buffer);
 
-  if (id3UpdateResult === true) {
-    console.info(`✅ Tags for ${downloadId} saved to audio file. Sending to ${req.ip}!`)
-    res.download(audioDest);
-  } else {
-    console.error(`Error adding tags to file (Download ID: ${downloadId}): ${id3UpdateResult.message}`)
-    res.status(500).send('Error downloading file. Check server logs.');
+  if (channelData.length !== 2) {
+    console.error('Error decoding the wav file: one of the stereo channels is missing.')
+    res.status(500).send(ERROR_ON_THE_DOWNLOAD_MESSAGE);
+    return;
   }
+
+  let encoder;
+  let fileEnd: 'mp3' | 'flac' | 'm4a';
+  const channels = 2;
+
+  switch (format) {
+    case AudioFormats.MP3:
+      encoder = await mp3({ sampleRate, channels, bitrate: parseFloat(bitRate!.toString()) });
+      fileEnd = 'mp3';
+      break;
+    case AudioFormats.ALAC:
+      encoder = await alac({ sampleRate, channels });
+      fileEnd = 'm4a';
+      break;
+    case AudioFormats.FLAC:
+      encoder = await flac({ sampleRate, channels, bitDepth: 24, compression: 3 });
+      fileEnd = 'flac';
+      break;
+    default: 
+      console.error(`No process for the format '${format}'`);
+      res.status(500).send(ERROR_ON_THE_DOWNLOAD_MESSAGE);
+      return;
+  }
+
+  const downloadAudioDest = path.resolve(`${downloadsFolder}/${downloadId}/download.${fileEnd}`);
+  const song = encoder.encode(channelData);
+  const tail = await encoder.flush();
+  let head = null;
+  
+  if (format !== AudioFormats.ALAC) {
+    if (!(encoder as StreamEncoder).head) {
+      encoder.free();
+      console.error('Error decoding the wav file: for some reason the head function is missing from the encoder.');
+
+    }
+
+    head = (encoder as StreamEncoder).head!() ?? new Uint8Array(0);
+  }
+
+  let fullSong = new Uint8Array((head ? head.length : 0) + song.length + tail.length);
+  if (head) {
+    fullSong.set(head);
+  }
+  fullSong.set(song);
+  fullSong.set(tail);
+
+  console.log('full song before tags:', fullSong.length);
+
+  const tagsObject = JSON.parse(readFileSync(tagsDest).toString());
+  const metaInput = {
+    meta: tagsObject
+  }
+
+  switch (format) {
+    case AudioFormats.MP3:
+      fullSong = writeMp3Meta(fullSong, metaInput);
+      res.contentType('audio/mpeg');
+      break;
+    case AudioFormats.FLAC:
+      fullSong = writeFlacMeta(fullSong, metaInput);
+      res.contentType('audio/flac');
+      break;
+    case AudioFormats.ALAC:
+      fullSong = writeM4aMeta(fullSong, metaInput);
+      res.contentType('audio/mp4');
+      break;
+    default:
+      console.error('Error encoding the tags: how did it make it this far?');
+      res.status(500).send(ERROR_ON_THE_DOWNLOAD_MESSAGE);
+      return;
+  }
+
+  console.log(downloadAudioDest, fullSong.length);
+  writeFileSync(downloadAudioDest, Buffer.from(fullSong.buffer));
+  console.info(`✅ Tags for ${downloadId} saved to audio file. Sending to ${req.ip}!`);
+  res.download(downloadAudioDest);
+
+  // const id3UpdateResult = id3.update(JSON.parse(readFileSync(tagsDest).toString()), rawAudioDest)
+
+  // if (id3UpdateResult === true) {
+  // } else {
+  //   console.error(`Error adding tags to file (Download ID: ${downloadId}): ${id3UpdateResult.message}`)
+  //   res.status(500).send(ERROR_ON_THE_DOWNLOAD_MESSAGE);
+  // }
 });
 
 /**
@@ -120,9 +214,8 @@ const saveToCurrent = async (id: string, audio: RequestFile, cover: RequestFile,
   // Convert wav to streaming mp3
   console.info('Converting wav file to an mp3 for streaming...')
   const { channelData, sampleRate } = decode(audio.buffer)
-  const [ left, right ] = channelData;
 
-  if (!left || !right) {
+  if (channelData.length !== 2) {
     throw new Error('Error decoding the wav file: one of the stereo channels is missing.');
   }
 
@@ -192,10 +285,10 @@ ${currentFiles.map(f => `- ${f.name}`).join('\n')}`)
     const splitName = fileName.split('.');
     const fileEnding = splitName[splitName.length - 1] ?? 'no ending';
 
-    const getTarName = (ending: string): 'tags' | 'audio' | 'cover' | 'raw' => {
+    const getTarName = (ending: string): 'tags' | 'stream' | 'cover' | 'raw' => {
       switch (ending.toLowerCase()) {
         case 'json': return 'tags';
-        case 'mp3': return 'audio';
+        case 'mp3': return 'stream';
         case 'png': return 'cover';
         case 'wav': return 'raw';
         default: {
