@@ -117,6 +117,11 @@ audio.get('/:songId/download', verifyJwt, async (req: Request<{ songId: string }
     return;
   }
 
+  const tagsObject = JSON.parse(readFileSync(tagsDest).toString());
+  const metaInput = {
+    meta: tagsObject
+  }
+
   let encoder;
   let fileEnd: 'mp3' | 'flac' | 'm4a';
   const channels = 2;
@@ -127,7 +132,7 @@ audio.get('/:songId/download', verifyJwt, async (req: Request<{ songId: string }
       fileEnd = 'mp3';
       break;
     case AudioFormats.ALAC:
-      encoder = await alac({ sampleRate, channels });
+      encoder = await alac({ sampleRate, channels, bitDepth: 24, meta: tagsObject });
       fileEnd = 'm4a';
       break;
     case AudioFormats.FLAC:
@@ -162,13 +167,6 @@ audio.get('/:songId/download', verifyJwt, async (req: Request<{ songId: string }
   fullSong.set(song);
   fullSong.set(tail);
 
-  console.log('full song before tags:', fullSong.length);
-
-  const tagsObject = JSON.parse(readFileSync(tagsDest).toString());
-  const metaInput = {
-    meta: tagsObject
-  }
-
   switch (format) {
     case AudioFormats.MP3:
       fullSong = writeMp3Meta(fullSong, metaInput);
@@ -179,7 +177,6 @@ audio.get('/:songId/download', verifyJwt, async (req: Request<{ songId: string }
       res.contentType('audio/flac');
       break;
     case AudioFormats.ALAC:
-      fullSong = writeM4aMeta(fullSong, metaInput);
       res.contentType('audio/mp4');
       break;
     default:
@@ -188,7 +185,6 @@ audio.get('/:songId/download', verifyJwt, async (req: Request<{ songId: string }
       return;
   }
 
-  console.log(downloadAudioDest, fullSong.length);
   writeFileSync(downloadAudioDest, Buffer.from(fullSong.buffer));
   console.info(`✅ Tags for ${downloadId} saved to audio file. Sending to ${req.ip}!`);
   res.download(downloadAudioDest);
